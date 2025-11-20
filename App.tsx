@@ -17,7 +17,7 @@ const companies: CompanyProfile[] = [
   {
     id: '2',
     name: 'Ronak Advisory',
-    description: 'A specialized mergers and acquisitions transaction advisory shop facilitating complex financial dealings.',
+    description: 'A specialized mergers and acquisitions transaction advisory shop facilitating complex financial dealings in the lower middle market.',
     icon: Briefcase,
     href: '#',
   },
@@ -60,7 +60,7 @@ const App: React.FC = () => {
 
   return (
     <div className="relative min-h-screen w-full bg-slate-950 text-slate-200 overflow-x-hidden selection:bg-[#006464] selection:text-white">
-      
+
       {/* Ambient Background Elements */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <div className="absolute top-[-20%] left-[-10%] w-[70vw] h-[70vw] bg-[#006464] opacity-[0.08] blur-[120px] rounded-full mix-blend-screen animate-pulse" style={{ animationDuration: '8s' }}></div>
@@ -70,26 +70,26 @@ const App: React.FC = () => {
       </div>
 
       <main className="relative z-10 flex flex-col min-h-screen px-6 md:px-12 lg:px-24 max-w-7xl mx-auto">
-        
+
         {/* Navigation / Header (Minimal) */}
         <header className={`flex justify-between items-center py-10 transition-opacity duration-1000 ${loaded ? 'opacity-100' : 'opacity-0'}`}>
-          <a 
-            href="#" 
+          <a
+            href="#"
             onClick={handleScrollToTop}
             className="flex items-center gap-2 group cursor-pointer"
             aria-label="Scroll to top"
           >
-             <div className="w-3 h-3 bg-[#006464] rounded-full transition-all duration-500 ease-out group-hover:scale-125 group-hover:bg-[#007d7d] group-hover:shadow-[0_0_15px_rgba(0,100,100,0.6)]"></div>
-             <span className="text-xs font-light tracking-[0.2em] text-slate-400 uppercase transition-colors duration-300 group-hover:text-slate-200">Holding Corp</span>
+            <div className="w-3 h-3 bg-[#006464] rounded-full transition-all duration-500 ease-out group-hover:scale-125 group-hover:bg-[#007d7d] group-hover:shadow-[0_0_15px_rgba(0,100,100,0.6)]"></div>
+            <span className="text-xs font-light tracking-[0.2em] text-slate-400 uppercase transition-colors duration-300 group-hover:text-slate-200">Holding Corp</span>
           </a>
           <nav>
-             <a 
-               href="#" 
-               onClick={handleContactClick}
-               className="text-xs font-light tracking-widest text-slate-500 hover:text-white transition-colors relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-px after:bg-[#006464] hover:after:w-full after:transition-all after:duration-300"
-             >
-               CONTACT
-             </a>
+            <a
+              href="#"
+              onClick={handleContactClick}
+              className="text-xs font-light tracking-widest text-slate-500 hover:text-white transition-colors relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-px after:bg-[#006464] hover:after:w-full after:transition-all after:duration-300"
+            >
+              CONTACT
+            </a>
           </nav>
         </header>
 
@@ -104,10 +104,10 @@ const App: React.FC = () => {
               Architecting the future through strategic capital allocation. We build, acquire, and elevate premier companies across finance, advisory, and media sectors.
             </p>
           </div>
-          
+
           {/* Scroll Indicator */}
           <div className={`mt-24 transition-opacity duration-1000 delay-700 ${loaded ? 'opacity-100' : 'opacity-0'}`}>
-            <a 
+            <a
               href="#portfolio"
               onClick={(e) => handleScrollToSection(e, 'portfolio')}
               className="inline-block animate-bounce cursor-pointer"
@@ -121,8 +121,8 @@ const App: React.FC = () => {
         {/* Portfolio Grid Section */}
         <section id="portfolio" className="w-full pb-24 scroll-mt-24">
           <div className={`mb-12 flex items-center gap-4 transition-all duration-1000 delay-500 ${loaded ? 'opacity-100' : 'opacity-0'}`}>
-             <span className="h-px w-8 bg-[#006464]"></span>
-             <h2 className="text-xs font-light tracking-[0.3em] uppercase text-slate-400">Our Portfolio</h2>
+            <span className="h-px w-8 bg-[#006464]"></span>
+            <h2 className="text-xs font-light tracking-[0.3em] uppercase text-slate-400">Our Portfolio</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
@@ -134,17 +134,17 @@ const App: React.FC = () => {
 
         {/* Footer */}
         <footer className="py-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 text-xs text-slate-600 font-light tracking-wider">
-          
+
           {/* Copyright */}
           <p className="order-2 md:order-1">&copy; {new Date().getFullYear()} The Kandela Group LLC. All Rights Reserved.</p>
-          
+
           {/* Social Icons */}
           <div className="flex items-center gap-6 order-1 md:order-2">
             <a href="#" className="group" aria-label="X">
-              <svg 
-                viewBox="0 0 24 24" 
-                width="18" 
-                height="18" 
+              <svg
+                viewBox="0 0 24 24"
+                width="18"
+                height="18"
                 className="text-slate-600 fill-current transition-all duration-300 group-hover:text-teal-400 group-hover:scale-125 group-hover:-translate-y-1"
               >
                 <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z" />
@@ -157,22 +157,22 @@ const App: React.FC = () => {
 
           {/* Legal Links */}
           <div className="flex gap-6 order-3 md:order-3">
-            <a 
-              href="#" 
+            <a
+              href="#"
               onClick={(e) => {
                 e.preventDefault();
                 setIsPrivacyOpen(true);
-              }} 
+              }}
               className="hover:text-teal-400 transition-all duration-300 hover:scale-105 inline-block"
             >
               Privacy Policy
             </a>
-            <a 
-              href="#" 
+            <a
+              href="#"
               onClick={(e) => {
                 e.preventDefault();
                 setIsTermsOpen(true);
-              }} 
+              }}
               className="hover:text-teal-400 transition-all duration-300 hover:scale-105 inline-block"
             >
               Terms of Service
@@ -183,11 +183,11 @@ const App: React.FC = () => {
       </main>
 
       {/* Modals */}
-      <ContactModal 
-        isOpen={isContactOpen} 
-        onClose={() => setIsContactOpen(false)} 
+      <ContactModal
+        isOpen={isContactOpen}
+        onClose={() => setIsContactOpen(false)}
       />
-      
+
       <TermsModal
         isOpen={isTermsOpen}
         onClose={() => setIsTermsOpen(false)}
