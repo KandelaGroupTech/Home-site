@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Kandela Group | Strategic Holding Company</title>
+  <meta name="description"
+    content="The Kandela Group is a strategic holding company dedicated to building, acquiring, and elevating premier companies across finance, advisory, and media sectors." />
+  <meta name="keywords"
+    content="The Kandela Group, holding company, Ronak Ventures, Ronak Advisory, Ronak Studios, private equity, strategic capital, business advisory, media production, investment" />
+  <meta name="author" content="The Kandela Group" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="The Kandela Group | Strategic Holding Company" />
+  <meta property="og:description"
+    content="Building, acquiring, and elevating premier companies across finance, advisory, and media sectors." />
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:title" content="The Kandela Group | Strategic Holding Company" />
+  <meta property="twitter:description"
+    content="Building, acquiring, and elevating premier companies across finance, advisory, and media sectors." />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            teal: {
+              800: '#006464',
+              900: '#004d4d',
+            },
+            slate: {
+              950: '#020617',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            serif: ['Playfair Display', 'serif'],
+          },
+          animation: {
+            'fade-in': 'fadeIn 1.5s ease-out forwards',
+            'slide-up': 'slideUp 1s ease-out forwards',
+          },
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: '0' },
+              '100%': { opacity: '1' },
+            },
+            slideUp: {
+              '0%': { opacity: '0', transform: 'translateY(20px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            }
+          }
+        },
+      },
+    };
+  </script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:wght@400;700&display=swap"
+    rel="stylesheet">
+  <style>
+    body {
+      background-color: #020617;
+      color: white;
+    }
+
+    /* Custom Scrollbar for Webkit */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+
+</html>
