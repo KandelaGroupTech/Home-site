@@ -11,7 +11,16 @@ const AuthListener: React.FC = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+        // 1. Check URL hash for recovery/invite flow immediately
+        const hash = window.location.hash;
+        if (hash && (hash.includes('type=recovery') || hash.includes('type=invite'))) {
+            // Redirect to the update page BUT preserve the hash so Supabase can parse the token
+            navigate({ pathname: '/update-password', hash: hash });
+        }
+
+        // 2. Listen for Supabase auth events
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            console.log('Auth Event:', event);
             if (event === 'PASSWORD_RECOVERY') {
                 navigate('/update-password');
             }
