@@ -4,7 +4,11 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error('Missing Supabase environment variables');
+    console.error('Missing Supabase environment variables. Check .env.local or Vercel settings.');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Fallback to prevent app crash, but requests will fail if keys are missing
+export const supabase = createClient(
+    supabaseUrl || 'https://placeholder.supabase.co',
+    supabaseAnonKey || 'placeholder'
+);

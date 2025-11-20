@@ -146,7 +146,7 @@ const LandingPage: React.FC = () => {
 
                     {/* Social Icons */}
                     <div className="flex items-center gap-6 order-1 md:order-2">
-                        <a href="#" className="group" aria-label="X">
+                        <a href="https://x.com/TheKandelaGroup" target="_blank" rel="noopener noreferrer" className="group" aria-label="X">
                             <svg
                                 viewBox="0 0 24 24"
                                 width="18"
