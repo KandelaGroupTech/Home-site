@@ -107,7 +107,7 @@ const LandingPage: React.FC = () => {
                         </h1>
                         <div className="h-px w-24 bg-gradient-to-r from-transparent via-[#006464] to-transparent mx-auto mb-8"></div>
                         <p className="max-w-2xl mx-auto text-sm md:text-base text-slate-400 font-light tracking-wide leading-relaxed">
-                            Architecting the future through strategic capital allocation. We build, acquire, and elevate premier companies across finance, advisory, and media sectors.
+                            Architecting the future through strategic capital allocation. We support entrepreneurs to build, acquire or grow small businesses that provide essential services to society.
                         </p>
                     </div>
 
