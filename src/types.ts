@@ -17,7 +17,14 @@ export interface UserProfile {
     firstName: string;
     lastName: string;
     phone: string;
-    address: string;
+    address: {
+        line1: string;
+        line2: string;
+        city: string;
+        state: string;
+        zipCode: string;
+        country: string;
+    };
     company: string;
     preferences: {
         openToNewDeals: boolean;
