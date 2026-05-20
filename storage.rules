@@ -1,0 +1,15 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // We can't directly query Firestore from Storage rules to check role efficiently without custom claims.
+    // Assuming admins are uploading, we restrict write to authenticated users (and rely on app logic), 
+    // or we can use custom claims. For now, require auth for read and write.
+    
+    match /{allPaths=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+  }
+}
