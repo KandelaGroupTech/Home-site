@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { X, Send, Check } from 'lucide-react';
+import emailjs from '@emailjs/browser';
 
 interface ContactModalProps {
   isOpen: boolean;
@@ -27,6 +28,7 @@ const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose }) => {
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isSending, setIsSending] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -76,22 +78,34 @@ const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose }) => {
     return isValid;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
-      const subject = encodeURIComponent(`Contact from Website: ${formData.name}`);
-      const body = encodeURIComponent(`Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`);
-      const mailtoLink = `mailto:info@thekandelagroup.com?subject=${subject}&body=${body}`;
+      setIsSending(true);
       
-      // Trigger mail client
-      window.location.href = mailtoLink;
-
-      setIsSuccess(true);
-      
-      // Close modal after a delay
-      setTimeout(() => {
-        onClose();
-      }, 2500);
+      try {
+        await emailjs.send(
+          import.meta.env.VITE_EMAILJS_SERVICE_ID,
+          import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+          {
+            name: formData.name,
+            email: formData.email,
+            message: formData.message,
+          },
+          import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+        );
+        
+        setIsSuccess(true);
+        // Close modal after a delay
+        setTimeout(() => {
+          onClose();
+        }, 2500);
+      } catch (error) {
+        console.error("Failed to send email:", error);
+        alert("There was an error sending your message. Please try again later.");
+      } finally {
+        setIsSending(false);
+      }
     }
   };
 
@@ -133,9 +147,9 @@ const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose }) => {
             <div className="w-16 h-16 rounded-full bg-[#006464]/10 flex items-center justify-center mb-6 border border-[#006464]/30">
               <Check size={32} className="text-[#006464]" strokeWidth={1.5} />
             </div>
-            <h2 className="font-serif text-3xl text-white mb-3">Message Ready</h2>
+            <h2 className="font-serif text-3xl text-white mb-3">Message Sent!</h2>
             <p className="text-slate-400 font-light text-sm max-w-xs mx-auto leading-relaxed">
-              We've opened your email client with your message draft. Please hit send to contact The Kandela Group.
+              Your message has been sent successfully. We will get back to you shortly.
             </p>
           </div>
         ) : (
@@ -205,10 +219,11 @@ const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose }) => {
 
               <button 
                 type="submit"
-                className="w-full bg-[#006464] hover:bg-[#005050] text-white py-4 text-sm uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2 group mt-2 border border-transparent hover:border-[#007d7d]"
+                disabled={isSending}
+                className="w-full bg-[#006464] hover:bg-[#005050] text-white py-4 text-sm uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2 group mt-2 border border-transparent hover:border-[#007d7d] disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <span>Send Message</span>
-                <Send size={14} className="group-hover:translate-x-1 transition-transform" />
+                <span>{isSending ? 'Sending...' : 'Send Message'}</span>
+                {!isSending && <Send size={14} className="group-hover:translate-x-1 transition-transform" />}
               </button>
             </form>
           </>
