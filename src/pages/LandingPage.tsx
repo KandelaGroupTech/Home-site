@@ -9,10 +9,10 @@ import { CompanyProfile } from '../types';
 const companies: CompanyProfile[] = [
     {
         id: '1',
-        name: 'Ronak Ventures',
+        name: 'Blackpine Capital',
         description: 'Strategic capital providing access to value creation opportunities in the lower middle market to middle class individuals.',
         icon: LineChart,
-        href: '#',
+        href: 'https://capital.thekandelagroup.com',
     },
     {
         id: '2',
