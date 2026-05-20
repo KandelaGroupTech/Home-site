@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { auth } from '../lib/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 
 interface ProtectedRouteProps {
     children: React.ReactNode;
@@ -11,14 +12,13 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     const [authenticated, setAuthenticated] = useState(false);
 
     useEffect(() => {
-        checkAuth();
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            setAuthenticated(!!user);
+            setLoading(false);
+        });
+        
+        return () => unsubscribe();
     }, []);
-
-    const checkAuth = async () => {
-        const { data: { session } } = await supabase.auth.getSession();
-        setAuthenticated(!!session);
-        setLoading(false);
-    };
 
     if (loading) {
         return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-500">Loading...</div>;

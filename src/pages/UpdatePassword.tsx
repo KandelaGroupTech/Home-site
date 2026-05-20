@@ -1,25 +1,45 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { auth } from '../lib/firebase';
+import { confirmPasswordReset, verifyPasswordResetCode } from 'firebase/auth';
 
 const UpdatePassword: React.FC = () => {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [validCode, setValidCode] = useState(false);
+    const [oobCode, setOobCode] = useState<string | null>(null);
     const navigate = useNavigate();
+    const location = useLocation();
+
+    useEffect(() => {
+        // Firebase adds actionCode (oobCode) as a query parameter
+        const queryParams = new URLSearchParams(location.search);
+        const code = queryParams.get('oobCode');
+        
+        if (!code) {
+            setError("Invalid or missing password reset link.");
+            return;
+        }
+
+        setOobCode(code);
+        
+        // Verify the code is valid
+        verifyPasswordResetCode(auth, code)
+            .then(() => setValidCode(true))
+            .catch((err) => setError("Invalid or expired password reset link."));
+    }, [location]);
 
     const handleUpdatePassword = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!oobCode) return;
+        
         setLoading(true);
         setError(null);
 
         try {
-            const { error } = await supabase.auth.updateUser({
-                password: password
-            });
-
-            if (error) throw error;
-            navigate('/dashboard');
+            await confirmPasswordReset(auth, oobCode, password);
+            navigate('/login');
         } catch (err: any) {
             setError(err.message);
         } finally {
@@ -38,26 +58,34 @@ const UpdatePassword: React.FC = () => {
                     </div>
                 )}
 
-                <form onSubmit={handleUpdatePassword} className="space-y-4">
-                    <div>
-                        <label className="block text-sm text-slate-400 mb-1">New Password</label>
-                        <input
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="w-full bg-slate-950 border border-white/10 rounded p-2 text-white focus:border-[#006464] focus:outline-none transition-colors"
-                            required
-                            minLength={6}
-                        />
-                    </div>
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full bg-[#006464] hover:bg-[#007d7d] text-white py-2 rounded transition-colors disabled:opacity-50"
-                    >
-                        {loading ? 'Updating...' : 'Update Password'}
-                    </button>
-                </form>
+                {validCode && (
+                    <form onSubmit={handleUpdatePassword} className="space-y-4">
+                        <div>
+                            <label className="block text-sm text-slate-400 mb-1">New Password</label>
+                            <input
+                                type="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="w-full bg-slate-950 border border-white/10 rounded p-2 text-white focus:border-[#006464] focus:outline-none transition-colors"
+                                required
+                                minLength={6}
+                            />
+                        </div>
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full bg-[#006464] hover:bg-[#007d7d] text-white py-2 rounded transition-colors disabled:opacity-50"
+                        >
+                            {loading ? 'Updating...' : 'Update Password'}
+                        </button>
+                    </form>
+                )}
+                
+                <div className="mt-4 text-center">
+                    <a href="/login" className="text-xs text-slate-500 hover:text-white transition-colors">
+                        ← Back to Login
+                    </a>
+                </div>
             </div>
         </div>
     );

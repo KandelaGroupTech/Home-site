@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { auth } from '../lib/firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
 const LoginPage: React.FC = () => {
     const [email, setEmail] = useState('');
@@ -15,12 +16,7 @@ const LoginPage: React.FC = () => {
         setError(null);
 
         try {
-            const { error } = await supabase.auth.signInWithPassword({
-                email,
-                password,
-            });
-
-            if (error) throw error;
+            await signInWithEmailAndPassword(auth, email, password);
             navigate('/dashboard');
         } catch (err: any) {
             setError(err.message);

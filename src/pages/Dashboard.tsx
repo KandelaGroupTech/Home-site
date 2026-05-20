@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { auth, db } from '../lib/firebase';
+import { signOut } from 'firebase/auth';
+import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 import { FileText, LogOut, Download } from 'lucide-react';
 
 interface Document {
     id: string;
     title: string;
     file_url: string;
-    created_at: string;
+    created_at: any;
 }
 
 const Dashboard: React.FC = () => {
@@ -21,19 +23,19 @@ const Dashboard: React.FC = () => {
 
     const fetchDocuments = async () => {
         try {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) {
+            if (!auth.currentUser) {
                 navigate('/login');
                 return;
             }
 
-            const { data, error } = await supabase
-                .from('documents')
-                .select('*')
-                .order('created_at', { ascending: false });
+            const q = query(collection(db, 'documents'), orderBy('created_at', 'desc'));
+            const querySnapshot = await getDocs(q);
+            const docsData = querySnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            })) as Document[];
 
-            if (error) throw error;
-            setDocuments(data || []);
+            setDocuments(docsData);
         } catch (error) {
             console.error('Error fetching documents:', error);
         } finally {
@@ -42,7 +44,7 @@ const Dashboard: React.FC = () => {
     };
 
     const handleLogout = async () => {
-        await supabase.auth.signOut();
+        await signOut(auth);
         navigate('/login');
     };
 
@@ -92,7 +94,7 @@ const Dashboard: React.FC = () => {
                                     <div>
                                         <h3 className="text-white font-medium">{doc.title}</h3>
                                         <p className="text-xs text-slate-500 mt-1">
-                                            {new Date(doc.created_at).toLocaleDateString()}
+                                            {doc.created_at ? new Date(doc.created_at?.toDate ? doc.created_at.toDate() : doc.created_at).toLocaleDateString() : ''}
                                         </p>
                                     </div>
                                 </div>

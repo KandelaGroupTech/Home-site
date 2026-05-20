@@ -1,41 +1,14 @@
-import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
 import UpdatePassword from './pages/UpdatePassword';
 import ProtectedRoute from './components/ProtectedRoute';
-import { supabase } from './lib/supabase';
-
-const AuthListener: React.FC = () => {
-    const navigate = useNavigate();
-
-    useEffect(() => {
-        // 1. Check URL hash for recovery/invite flow immediately
-        const hash = window.location.hash;
-        if (hash && (hash.includes('type=recovery') || hash.includes('type=invite'))) {
-            // Redirect to the update page BUT preserve the hash so Supabase can parse the token
-            navigate({ pathname: '/update-password', hash: hash });
-        }
-
-        // 2. Listen for Supabase auth events
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-            console.log('Auth Event:', event);
-            if (event === 'PASSWORD_RECOVERY') {
-                navigate('/update-password');
-            }
-        });
-
-        return () => subscription.unsubscribe();
-    }, [navigate]);
-
-    return null;
-};
 
 const App: React.FC = () => {
     return (
         <Router>
-            <AuthListener />
             <Routes>
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/login" element={<LoginPage />} />
