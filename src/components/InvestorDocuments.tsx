@@ -29,14 +29,12 @@ const InvestorDocuments: React.FC<Props> = ({ userUid }) => {
                     // 1. Documents broadcast to everyone
                     getDocs(query(
                         collection(db, 'documents'),
-                        where('target_audience', '==', 'all'),
-                        orderBy('created_at', 'desc')
+                        where('target_audience', '==', 'all')
                     )),
                     // 2. Documents shared specifically with this investor
                     getDocs(query(
                         collection(db, 'documents'),
-                        where('allowed_uids', 'array-contains', userUid),
-                        orderBy('created_at', 'desc')
+                        where('allowed_uids', 'array-contains', userUid)
                     )),
                 ]);
 
