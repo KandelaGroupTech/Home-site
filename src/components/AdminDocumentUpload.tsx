@@ -18,11 +18,21 @@ const AdminDocumentUpload: React.FC = () => {
     const [uploading, setUploading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [dragActive, setDragActive] = useState(false);
+    const [userSearch, setUserSearch] = useState('');
 
     useEffect(() => {
         const fetchUsers = async () => {
             const snap = await getDocs(collection(db, 'users'));
-            setUsersList(snap.docs.map(d => ({ uid: d.id, ...d.data() } as UserProfile)).filter(u => u.role !== 'admin'));
+            const fetchedUsers = snap.docs.map(d => ({ uid: d.id, ...d.data() } as UserProfile)).filter(u => u.role !== 'admin');
+            
+            // Sort users alphabetically by first name then last name
+            fetchedUsers.sort((a, b) => {
+                const nameA = `${a.firstName || ''} ${a.lastName || ''}`.trim().toLowerCase();
+                const nameB = `${b.firstName || ''} ${b.lastName || ''}`.trim().toLowerCase();
+                return nameA.localeCompare(nameB);
+            });
+            
+            setUsersList(fetchedUsers);
         };
         fetchUsers();
     }, []);
@@ -221,21 +231,34 @@ const AdminDocumentUpload: React.FC = () => {
 
                     {audience === 'specific_users' && (
                         <div className="mt-3 border border-slate-200 rounded-xl overflow-hidden">
-                            <div className="bg-slate-50 px-4 py-2 border-b border-slate-200">
+                            <div className="bg-slate-50 px-4 py-2 border-b border-slate-200 flex items-center justify-between">
                                 <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">Select Investors</p>
+                                <input 
+                                    type="text" 
+                                    placeholder="Search name..." 
+                                    value={userSearch}
+                                    onChange={e => setUserSearch(e.target.value)}
+                                    className="text-xs px-2 py-1 border border-slate-200 rounded bg-white focus:outline-none focus:border-teal-400 w-32"
+                                />
                             </div>
-                            <div className="max-h-44 overflow-y-auto divide-y divide-slate-100">
+                            <div className="max-h-56 overflow-y-auto divide-y divide-slate-100">
                                 {usersList.length === 0
                                     ? <p className="text-slate-400 text-xs p-4">No investors found.</p>
-                                    : usersList.map(u => (
-                                        <label key={u.uid} className="flex items-center gap-3 px-4 py-3 hover:bg-teal-50 cursor-pointer transition-colors">
-                                            <input type="checkbox" checked={selectedUsers.includes(u.uid)} onChange={() => handleUserToggle(u.uid)} className="rounded border-slate-300 text-teal-600 focus:ring-teal-500" />
-                                            <div>
-                                                <p className="text-sm text-slate-700">{u.firstName} {u.lastName}</p>
-                                                <p className="text-xs text-slate-400">{u.email}</p>
-                                            </div>
-                                        </label>
-                                    ))
+                                    : usersList
+                                        .filter(u => {
+                                            if (!userSearch) return true;
+                                            const search = userSearch.toLowerCase();
+                                            return `${u.firstName || ''} ${u.lastName || ''} ${u.email || ''}`.toLowerCase().includes(search);
+                                        })
+                                        .map(u => (
+                                            <label key={u.uid} className="flex items-center gap-3 px-4 py-3 hover:bg-teal-50 cursor-pointer transition-colors">
+                                                <input type="checkbox" checked={selectedUsers.includes(u.uid)} onChange={() => handleUserToggle(u.uid)} className="rounded border-slate-300 text-teal-600 focus:ring-teal-500" />
+                                                <div>
+                                                    <p className="text-sm text-slate-700">{u.firstName} {u.lastName}</p>
+                                                    <p className="text-xs text-slate-400">{u.email}</p>
+                                                </div>
+                                            </label>
+                                        ))
                                 }
                             </div>
                         </div>
