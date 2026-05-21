@@ -13,25 +13,23 @@ import AdminDirectory from '../components/AdminDirectory';
 
 const Dashboard: React.FC = () => {
     const { user, profile, loading } = useAuth();
-    
-    // Default tabs based on role
     const [activeTab, setActiveTab] = useState<string>('feed');
 
     if (loading) {
         return (
-            <div className="min-h-screen w-full bg-slate-950 flex items-center justify-center">
-                <div className="w-12 h-12 border-4 border-teal-800 border-t-teal-400 rounded-full animate-spin"></div>
+            <div className="min-h-screen w-full bg-white flex items-center justify-center">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-12 h-12 border-4 border-teal-100 border-t-teal-600 rounded-full animate-spin"></div>
+                    <p className="text-teal-700 font-light text-sm tracking-widest uppercase">Loading Portal</p>
+                </div>
             </div>
         );
     }
 
-    if (!user) {
-        return null; // ProtectedRoute will catch this and redirect
-    }
+    if (!user) return null;
 
     const role = profile?.role || 'investor';
 
-    // Ensure tab matches role
     if (role === 'admin' && ['feed', 'documents', 'profile'].includes(activeTab)) {
         setActiveTab('overview');
     } else if (role === 'investor' && ['overview', 'upload', 'announcements', 'directory'].includes(activeTab)) {
@@ -45,25 +43,44 @@ const Dashboard: React.FC = () => {
                 case 'upload': return <AdminDocumentUpload />;
                 case 'announcements': return <AdminAnnouncements authorName={`${profile?.firstName || ''} ${profile?.lastName || ''}`.trim() || 'Admin'} />;
                 case 'directory': return <AdminDirectory />;
-                default: return <div className="p-8 text-white">Select a tab</div>;
+                default: return null;
             }
         } else {
             switch (activeTab) {
                 case 'feed': return <InvestorFeed />;
                 case 'documents': return <InvestorDocuments userUid={user.uid} />;
                 case 'profile': return <InvestorProfile userUid={user.uid} initialProfile={profile} />;
-                default: return <div className="p-8 text-white">Select a tab</div>;
+                default: return null;
             }
         }
     };
 
     return (
-        <div className="min-h-screen w-full bg-slate-950 flex">
+        <div className="min-h-screen w-full flex bg-[#f4f9f8]">
             <Sidebar role={role} activeTab={activeTab} setActiveTab={setActiveTab} />
-            <main className="flex-1 ml-64 min-h-screen bg-slate-950 relative">
-                {/* Decorative background glow */}
-                <div className="absolute top-0 right-0 w-[40rem] h-[40rem] bg-teal-900/10 blur-[100px] rounded-full pointer-events-none"></div>
-                
+
+            <main className="flex-1 ml-64 min-h-screen relative overflow-hidden">
+                {/* Geometric brand-inspired decorative shapes */}
+                <div className="pointer-events-none absolute inset-0 overflow-hidden">
+                    {/* Large angular teal plane - top right */}
+                    <div
+                        className="absolute -top-24 right-0 w-[520px] h-[380px] bg-teal-700/10"
+                        style={{ clipPath: 'polygon(100% 0, 100% 80%, 30% 100%, 60% 0)' }}
+                    />
+                    {/* Secondary angular plane */}
+                    <div
+                        className="absolute -top-10 right-32 w-[340px] h-[280px] bg-teal-600/8"
+                        style={{ clipPath: 'polygon(70% 0, 100% 60%, 40% 100%, 0 30%)' }}
+                    />
+                    {/* Bottom left light burst */}
+                    <div className="absolute bottom-0 left-0 w-80 h-64 bg-gradient-to-tr from-white via-teal-50/60 to-transparent" />
+                    {/* Bottom right accent */}
+                    <div
+                        className="absolute bottom-0 right-0 w-[280px] h-[200px] bg-teal-700/6"
+                        style={{ clipPath: 'polygon(100% 0, 100% 100%, 0 100%, 40% 20%)' }}
+                    />
+                </div>
+
                 <div className="relative z-10 max-w-6xl mx-auto py-10 px-8">
                     {renderContent()}
                 </div>
