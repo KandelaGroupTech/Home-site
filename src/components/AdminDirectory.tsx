@@ -38,7 +38,8 @@ const AdminDirectory: React.FC = () => {
                         <thead>
                             <tr className="bg-slate-950/50 border-b border-white/10 text-xs uppercase tracking-wider text-slate-500 font-medium">
                                 <th className="p-4">Name</th>
-                                <th className="p-4">Contact</th>
+                                <th className="p-4">Email</th>
+                                <th className="p-4">Phone</th>
                                 <th className="p-4">Company</th>
                                 <th className="p-4">Accredited</th>
                                 <th className="p-4">Check Size</th>
@@ -48,14 +49,18 @@ const AdminDirectory: React.FC = () => {
                         <tbody className="divide-y divide-white/5">
                             {users.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="p-8 text-center text-slate-500 font-light">No investors found in the database.</td>
+                                    <td colSpan={7} className="p-8 text-center text-slate-500 font-light">No investors found in the database.</td>
                                 </tr>
                             ) : (
                                 users.map(user => (
                                     <tr key={user.uid} className="hover:bg-white/5 transition-colors">
                                         <td className="p-4">
                                             <div className="text-white font-medium">{user.firstName} {user.lastName}</div>
-                                            <div className="text-xs text-slate-500">{user.email}</div>
+                                        </td>
+                                        <td className="p-4 text-sm text-slate-300">
+                                            {user.email ? (
+                                                <a href={`mailto:${user.email}`} className="text-teal-400 hover:underline">{user.email}</a>
+                                            ) : '-'}
                                         </td>
                                         <td className="p-4 text-sm text-slate-300">
                                             {user.phone || '-'}

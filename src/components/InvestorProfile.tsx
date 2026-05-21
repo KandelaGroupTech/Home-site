@@ -178,6 +178,17 @@ const InvestorProfile: React.FC<Props> = ({ userUid, initialProfile }) => {
                                 />
                             </div>
                         </div>
+                        <div className="space-y-1 md:col-span-2">
+                            <label className="text-xs text-slate-500 uppercase tracking-wider">Email Address</label>
+                            <input
+                                type="email"
+                                name="email"
+                                value={profile.email || ''}
+                                onChange={handleChange}
+                                className="w-full bg-slate-950/50 border border-white/10 rounded p-3 text-white focus:border-teal-500 focus:outline-none transition-colors font-light"
+                                placeholder="your@email.com"
+                            />
+                        </div>
                     </div>
                 </section>
 
