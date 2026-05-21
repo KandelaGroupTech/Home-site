@@ -22,7 +22,7 @@ const AdminDocumentUpload: React.FC = () => {
     useEffect(() => {
         const fetchUsers = async () => {
             const snap = await getDocs(collection(db, 'users'));
-            setUsersList(snap.docs.map(d => d.data() as UserProfile).filter(u => u.role !== 'admin'));
+            setUsersList(snap.docs.map(d => ({ uid: d.id, ...d.data() } as UserProfile)).filter(u => u.role !== 'admin'));
         };
         fetchUsers();
     }, []);

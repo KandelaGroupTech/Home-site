@@ -13,7 +13,7 @@ const AdminDirectory: React.FC = () => {
         const fetchUsers = async () => {
             try {
                 const snap = await getDocs(collection(db, 'users'));
-                setUsers(snap.docs.map(d => d.data() as UserProfile).filter(u => u.role !== 'admin'));
+                setUsers(snap.docs.map(d => ({ uid: d.id, ...d.data() } as UserProfile)).filter(u => u.role !== 'admin'));
             } catch (e) { console.error(e); } finally { setLoading(false); }
         };
         fetchUsers();
