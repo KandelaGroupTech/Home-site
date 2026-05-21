@@ -14,6 +14,8 @@ const CompanyCard: React.FC<CompanyCardProps> = ({ company, index }) => {
   return (
     <a
       href={company.href}
+      target="_blank"
+      rel="noopener noreferrer"
       className="group relative flex flex-col justify-between p-8 bg-white/5 border border-white/10 hover:border-[#006464] backdrop-blur-sm transition-all duration-500 ease-out hover:bg-white/[0.07] hover:-translate-y-1 min-h-[280px] opacity-0 animate-slide-up overflow-hidden"
       style={{ animationDelay }}
     >
