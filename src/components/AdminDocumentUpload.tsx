@@ -191,8 +191,11 @@ const AdminDocumentUpload: React.FC = () => {
                         <label className="text-xs text-slate-500 uppercase tracking-wider font-medium block mb-1">Document Type</label>
                         <select value={type} onChange={e => setType(e.target.value)} className={fieldClass + ' appearance-none'}>
                             <option value="general">General</option>
-                            <option value="tax">Tax Document (K-1, 1099)</option>
                             <option value="financial">Financial Report</option>
+                            <option value="capital_call">Capital Call</option>
+                            <option value="distribution">Distribution</option>
+                            <option value="tax">Tax Document (K-1, 1099)</option>
+                            <option value="tax_distribution">Tax Distribution</option>
                         </select>
                     </div>
                 </div>

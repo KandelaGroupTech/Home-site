@@ -8,7 +8,11 @@ import {
     Users,
     Upload,
     Megaphone,
-    LogOut
+    LogOut,
+    Home,
+    FolderClosed,
+    HelpCircle,
+    Globe
 } from 'lucide-react';
 import { auth } from '../lib/firebase';
 import { signOut } from 'firebase/auth';
@@ -25,9 +29,11 @@ const Sidebar: React.FC<SidebarProps> = ({ role, activeTab, setActiveTab }) => {
     };
 
     const investorNav = [
-        { id: 'feed', label: 'Announcements', icon: Inbox },
-        { id: 'documents', label: 'My Documents', icon: FileText },
-        { id: 'profile', label: 'My Profile', icon: UserIcon },
+        { id: 'welcome', label: 'Welcome', icon: Home },
+        { id: 'documents', label: 'Documents', icon: FolderClosed },
+        { id: 'tax-documents', label: 'Tax Documents', icon: FolderClosed },
+        { id: 'faq', label: 'FAQ', icon: HelpCircle },
+        { id: 'contact', label: 'Contact Us', icon: Globe },
     ];
 
     const adminNav = [

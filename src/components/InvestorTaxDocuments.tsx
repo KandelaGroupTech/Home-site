@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../lib/firebase';
-import { collection, query, where, getDocs, doc, setDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { PlatformDocument } from '../types';
 import DocumentViewer from './DocumentViewer';
 
@@ -8,7 +8,7 @@ interface Props {
     userUid: string;
 }
 
-const InvestorDocuments: React.FC<Props> = ({ userUid }) => {
+const InvestorTaxDocuments: React.FC<Props> = ({ userUid }) => {
     const [documents, setDocuments] = useState<PlatformDocument[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -27,8 +27,8 @@ const InvestorDocuments: React.FC<Props> = ({ userUid }) => {
                 const merged = [...allDocs, ...specificDocs].filter(d => {
                     if (seen.has(d.id)) return false;
                     seen.add(d.id);
-                    // EXCLUDE tax documents and tax_distributions from this page
-                    return d.type !== 'tax' && d.type !== 'tax_distribution';
+                    // INCLUDE ONLY tax documents and tax_distributions
+                    return d.type === 'tax' || d.type === 'tax_distribution';
                 });
 
                 merged.sort((a, b) => {
@@ -48,21 +48,19 @@ const InvestorDocuments: React.FC<Props> = ({ userUid }) => {
     }, [userUid]);
 
     const categories = [
-        { key: 'capital_calls', label: 'Capital Calls', types: ['capital_call'] },
-        { key: 'distributions', label: 'Distributions', types: ['distribution'] },
-        { key: 'financial', label: 'Investment Summaries', types: ['financial'] },
-        { key: 'general', label: 'Other Correspondences', types: ['general', 'other'] }
+        { key: 'k1s', label: 'K-1s', types: ['tax'] },
+        { key: 'tax_distributions', label: 'Tax Distributions', types: ['tax_distribution'] }
     ];
 
     return (
         <DocumentViewer 
             documents={documents} 
             loading={loading}
-            pageTitle="Documents"
-            pageSubtitle="Secure access to your general and financial documents."
+            pageTitle="Tax Documents"
+            pageSubtitle="Secure access to your tax forms."
             categories={categories}
         />
     );
 };
 
-export default InvestorDocuments;
+export default InvestorTaxDocuments;

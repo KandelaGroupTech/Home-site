@@ -2,8 +2,11 @@ import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import Sidebar from '../components/Sidebar';
 
-import InvestorFeed from '../components/InvestorFeed';
+import InvestorWelcome from '../components/InvestorWelcome';
 import InvestorDocuments from '../components/InvestorDocuments';
+import InvestorTaxDocuments from '../components/InvestorTaxDocuments';
+import InvestorFAQ from '../components/InvestorFAQ';
+import InvestorContact from '../components/InvestorContact';
 import InvestorProfile from '../components/InvestorProfile';
 
 import AdminDashboard from '../components/AdminDashboard';
@@ -13,7 +16,7 @@ import AdminDirectory from '../components/AdminDirectory';
 
 const Dashboard: React.FC = () => {
     const { user, profile, loading } = useAuth();
-    const [activeTab, setActiveTab] = useState<string>('feed');
+    const [activeTab, setActiveTab] = useState<string>('welcome');
 
     if (loading) {
         return (
@@ -30,10 +33,10 @@ const Dashboard: React.FC = () => {
 
     const role = profile?.role || 'investor';
 
-    if (role === 'admin' && ['feed', 'documents', 'profile'].includes(activeTab)) {
+    if (role === 'admin' && ['welcome', 'documents', 'tax-documents', 'faq', 'contact'].includes(activeTab)) {
         setActiveTab('overview');
     } else if (role === 'investor' && ['overview', 'upload', 'announcements', 'directory'].includes(activeTab)) {
-        setActiveTab('feed');
+        setActiveTab('welcome');
     }
 
     const renderContent = () => {
@@ -47,8 +50,11 @@ const Dashboard: React.FC = () => {
             }
         } else {
             switch (activeTab) {
-                case 'feed': return <InvestorFeed />;
+                case 'welcome': return <InvestorWelcome profile={profile} setActiveTab={setActiveTab} />;
                 case 'documents': return <InvestorDocuments userUid={user.uid} />;
+                case 'tax-documents': return <InvestorTaxDocuments userUid={user.uid} />;
+                case 'faq': return <InvestorFAQ />;
+                case 'contact': return <InvestorContact profile={profile} />;
                 case 'profile': return <InvestorProfile userUid={user.uid} initialProfile={profile} />;
                 default: return null;
             }

@@ -37,10 +37,11 @@ export interface UserProfile {
 export interface PlatformDocument {
     id: string;
     title: string;
-    type: 'tax' | 'financial' | 'general' | 'other';
+    type: 'tax' | 'financial' | 'general' | 'other' | 'capital_call' | 'distribution' | 'tax_distribution';
     file_url: string;
     target_audience: 'all' | 'specific_users';
     allowed_uids: string[];
+    read_by?: string[]; // array of UIDs who have viewed the document
     created_at: any; // Firestore Timestamp
 }
 
