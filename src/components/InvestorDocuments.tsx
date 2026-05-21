@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../lib/firebase';
-import { collection, query, orderBy, getDocs } from 'firebase/firestore';
+import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
 import { PlatformDocument } from '../types';
 import { FileText, Download, Filter } from 'lucide-react';
 
@@ -23,14 +23,42 @@ const InvestorDocuments: React.FC<Props> = ({ userUid }) => {
     useEffect(() => {
         const fetchDocs = async () => {
             try {
-                const q = query(collection(db, 'documents'), orderBy('created_at', 'desc'));
-                const snapshot = await getDocs(q);
-                const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as PlatformDocument[];
-                const visible = data.filter(d =>
-                    d.target_audience === 'all' ||
-                    (d.allowed_uids && d.allowed_uids.includes(userUid))
-                );
-                setDocuments(visible);
+                // Run two targeted queries that Firestore security rules can evaluate
+                // at the query level — avoids collection-wide reads being rejected.
+                const [allSnap, specificSnap] = await Promise.all([
+                    // 1. Documents broadcast to everyone
+                    getDocs(query(
+                        collection(db, 'documents'),
+                        where('target_audience', '==', 'all'),
+                        orderBy('created_at', 'desc')
+                    )),
+                    // 2. Documents shared specifically with this investor
+                    getDocs(query(
+                        collection(db, 'documents'),
+                        where('allowed_uids', 'array-contains', userUid),
+                        orderBy('created_at', 'desc')
+                    )),
+                ]);
+
+                const allDocs    = allSnap.docs.map(d => ({ id: d.id, ...d.data() })) as PlatformDocument[];
+                const specificDocs = specificSnap.docs.map(d => ({ id: d.id, ...d.data() })) as PlatformDocument[];
+
+                // Merge and deduplicate (a doc could theoretically match both queries)
+                const seen = new Set<string>();
+                const merged = [...allDocs, ...specificDocs].filter(d => {
+                    if (seen.has(d.id)) return false;
+                    seen.add(d.id);
+                    return true;
+                });
+
+                // Re-sort descending by created_at after merge
+                merged.sort((a, b) => {
+                    const aTime = a.created_at?.toDate ? a.created_at.toDate() : new Date(a.created_at);
+                    const bTime = b.created_at?.toDate ? b.created_at.toDate() : new Date(b.created_at);
+                    return bTime.getTime() - aTime.getTime();
+                });
+
+                setDocuments(merged);
             } catch (error) {
                 console.error("Error fetching documents", error);
             } finally {
