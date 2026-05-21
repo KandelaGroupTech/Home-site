@@ -12,7 +12,8 @@ import {
     Home,
     FolderClosed,
     HelpCircle,
-    Globe
+    Globe,
+    FileText
 } from 'lucide-react';
 import { auth } from '../lib/firebase';
 import { signOut } from 'firebase/auth';
@@ -39,6 +40,7 @@ const Sidebar: React.FC<SidebarProps> = ({ role, activeTab, setActiveTab }) => {
     const adminNav = [
         { id: 'overview', label: 'Overview', icon: LayoutDashboard },
         { id: 'upload', label: 'Upload Documents', icon: Upload },
+        { id: 'manage-documents', label: 'Manage Documents', icon: FileText },
         { id: 'announcements', label: 'Communications', icon: Megaphone },
         { id: 'directory', label: 'Investor Directory', icon: Users },
     ];

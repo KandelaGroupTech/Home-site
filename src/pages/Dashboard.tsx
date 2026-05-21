@@ -11,6 +11,7 @@ import InvestorProfile from '../components/InvestorProfile';
 
 import AdminDashboard from '../components/AdminDashboard';
 import AdminDocumentUpload from '../components/AdminDocumentUpload';
+import AdminManageDocuments from '../components/AdminManageDocuments';
 import AdminAnnouncements from '../components/AdminAnnouncements';
 import AdminDirectory from '../components/AdminDirectory';
 
@@ -33,9 +34,9 @@ const Dashboard: React.FC = () => {
 
     const role = profile?.role || 'investor';
 
-    if (role === 'admin' && ['welcome', 'documents', 'tax-documents', 'faq', 'contact'].includes(activeTab)) {
+    if (role === 'admin' && ['welcome', 'documents', 'tax-documents', 'faq', 'contact', 'profile'].includes(activeTab)) {
         setActiveTab('overview');
-    } else if (role === 'investor' && ['overview', 'upload', 'announcements', 'directory'].includes(activeTab)) {
+    } else if (role === 'investor' && ['overview', 'upload', 'manage-documents', 'announcements', 'directory'].includes(activeTab)) {
         setActiveTab('welcome');
     }
 
@@ -44,6 +45,7 @@ const Dashboard: React.FC = () => {
             switch (activeTab) {
                 case 'overview': return <AdminDashboard />;
                 case 'upload': return <AdminDocumentUpload />;
+                case 'manage-documents': return <AdminManageDocuments />;
                 case 'announcements': return <AdminAnnouncements authorName={`${profile?.firstName || ''} ${profile?.lastName || ''}`.trim() || 'Admin'} />;
                 case 'directory': return <AdminDirectory />;
                 default: return null;
