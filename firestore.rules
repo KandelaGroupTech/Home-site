@@ -23,7 +23,11 @@ service cloud.firestore {
         resource.data.target_audience == 'all' || 
         request.auth.uid in resource.data.allowed_uids
       );
-      allow write: if isAdmin();
+      allow update: if isAdmin() || (
+        request.auth != null &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read_by'])
+      );
+      allow create, delete: if isAdmin();
     }
 
     match /announcements/{announcementId} {

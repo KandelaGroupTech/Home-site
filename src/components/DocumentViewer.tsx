@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PlatformDocument } from '../types';
 import { Folder, FolderOpen, FileText, Download, CheckSquare, Square, Search, ZoomIn, ZoomOut } from 'lucide-react';
+import { db } from '../lib/firebase';
+import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
 
 interface Category {
     key: string;
@@ -14,13 +16,19 @@ interface DocumentViewerProps {
     pageTitle: string;
     pageSubtitle: string;
     categories: Category[];
+    userUid: string;
 }
 
-const DocumentViewer: React.FC<DocumentViewerProps> = ({ documents, loading, pageTitle, pageSubtitle, categories }) => {
+const DocumentViewer: React.FC<DocumentViewerProps> = ({ documents, loading, pageTitle, pageSubtitle, categories, userUid }) => {
     const [activeCategory, setActiveCategory] = useState<string | null>(null);
     const [selectedDoc, setSelectedDoc] = useState<PlatformDocument | null>(null);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [showUnreadOnly, setShowUnreadOnly] = useState(false);
+    const [localDocs, setLocalDocs] = useState<PlatformDocument[]>(documents);
+
+    useEffect(() => {
+        setLocalDocs(documents);
+    }, [documents]);
 
     if (loading) {
         return (
@@ -34,14 +42,36 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({ documents, loading, pag
     const currentCat = categories.find(c => c.key === activeCategory);
     
     // Filter docs based on active category and unread toggle
-    let displayedDocs = documents;
+    let displayedDocs = localDocs;
     if (currentCat) {
-        displayedDocs = documents.filter(d => currentCat.types.includes(d.type));
+        displayedDocs = localDocs.filter(d => currentCat.types.includes(d.type));
     }
     if (showUnreadOnly) {
-        // Assume read_by is populated, if not, treat all as unread for now (just simulating)
-        displayedDocs = displayedDocs.filter(d => !d.read_by || d.read_by.length === 0);
+        displayedDocs = displayedDocs.filter(d => !d.read_by || !d.read_by.includes(userUid));
     }
+
+    const handleSelectDoc = async (d: PlatformDocument) => {
+        setSelectedDoc(d);
+        if (!d.read_by || !d.read_by.includes(userUid)) {
+            // Optimistically update local state
+            setLocalDocs(prev => prev.map(p => {
+                if (p.id === d.id) {
+                    return { ...p, read_by: [...(p.read_by || []), userUid] };
+                }
+                return p;
+            }));
+            
+            // Update Firestore
+            try {
+                const docRef = doc(db, 'documents', d.id);
+                await updateDoc(docRef, {
+                    read_by: arrayUnion(userUid)
+                });
+            } catch (err) {
+                console.error("Error updating read status", err);
+            }
+        }
+    };
 
     const toggleSelection = (id: string, e: React.MouseEvent) => {
         e.stopPropagation();
@@ -111,7 +141,10 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({ documents, loading, pag
                             // Show Folders
                             <div className="divide-y divide-slate-100">
                                 {categories.map(cat => {
-                                    const count = documents.filter(d => cat.types.includes(d.type)).length;
+                                    const catDocs = localDocs.filter(d => cat.types.includes(d.type));
+                                    const count = catDocs.length;
+                                    const unreadCount = catDocs.filter(d => !d.read_by || !d.read_by.includes(userUid)).length;
+                                    
                                     return (
                                         <button 
                                             key={cat.key}
@@ -122,9 +155,16 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({ documents, loading, pag
                                                 <Folder size={20} className="text-slate-400 group-hover:text-teal-500" />
                                                 <span className="font-medium">{cat.label}</span>
                                             </div>
-                                            <span className="text-xs font-semibold bg-slate-100 text-slate-500 px-2 py-1 rounded-full group-hover:bg-teal-100 group-hover:text-teal-700">
-                                                {count}
-                                            </span>
+                                            <div className="flex items-center gap-2">
+                                                {unreadCount > 0 && (
+                                                    <span className="text-xs font-semibold bg-teal-500 text-white px-2 py-0.5 rounded-full">
+                                                        {unreadCount} New
+                                                    </span>
+                                                )}
+                                                <span className="text-xs font-semibold bg-slate-100 text-slate-500 px-2 py-1 rounded-full group-hover:bg-teal-100 group-hover:text-teal-700">
+                                                    {count}
+                                                </span>
+                                            </div>
                                         </button>
                                     );
                                 })}
@@ -142,13 +182,13 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({ documents, loading, pag
                                         displayedDocs.map(doc => {
                                             const isSelectedDoc = selectedDoc?.id === doc.id;
                                             const isChecked = selectedIds.has(doc.id);
-                                            const isUnread = !doc.read_by || doc.read_by.length === 0;
+                                            const isUnread = !doc.read_by || !doc.read_by.includes(userUid);
                                             const date = doc.created_at ? new Date(doc.created_at?.toDate ? doc.created_at.toDate() : doc.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
                                             
                                             return (
                                                 <div 
                                                     key={doc.id}
-                                                    onClick={() => setSelectedDoc(doc)}
+                                                    onClick={() => handleSelectDoc(doc)}
                                                     className={`w-full text-left px-3 py-3 flex items-start gap-3 cursor-pointer transition-colors ${isSelectedDoc ? 'bg-teal-50/80 border-l-2 border-teal-500' : 'hover:bg-slate-50 border-l-2 border-transparent'}`}
                                                 >
                                                     <div className="pt-0.5" onClick={e => toggleSelection(doc.id, e)}>

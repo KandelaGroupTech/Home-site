@@ -61,6 +61,7 @@ const InvestorDocuments: React.FC<Props> = ({ userUid }) => {
             pageTitle="Documents"
             pageSubtitle="Secure access to your general and financial documents."
             categories={categories}
+            userUid={userUid}
         />
     );
 };

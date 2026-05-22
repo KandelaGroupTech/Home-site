@@ -59,6 +59,7 @@ const InvestorTaxDocuments: React.FC<Props> = ({ userUid }) => {
             pageTitle="Tax Documents"
             pageSubtitle="Secure access to your tax forms."
             categories={categories}
+            userUid={userUid}
         />
     );
 };

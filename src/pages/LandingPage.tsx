@@ -16,7 +16,7 @@ const companies: CompanyProfile[] = [
     },
     {
         id: '2',
-        name: 'Ronak Advisory',
+        name: 'Dunmore Bay Advisory',
         description: 'A specialized mergers and acquisitions transaction advisory shop facilitating complex financial dealings in the lower middle market.',
         icon: Briefcase,
         href: '#',
