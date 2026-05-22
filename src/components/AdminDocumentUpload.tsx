@@ -4,6 +4,7 @@ import { collection, addDoc, getDocs, writeBatch, doc } from 'firebase/firestore
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { UserProfile } from '../types';
 import { Upload, Check, FileText, X } from 'lucide-react';
+import { buildDocumentUploadEmail } from '../lib/emailTemplates';
 
 const fieldClass = "w-full bg-white border border-slate-200 rounded-lg p-3 text-slate-800 focus:border-teal-500 focus:ring-2 focus:ring-teal-100 focus:outline-none transition-all font-light text-sm placeholder:text-slate-300";
 
@@ -107,8 +108,8 @@ const AdminDocumentUpload: React.FC = () => {
                                     batch.set(mailRef, {
                                         to: u.email,
                                         message: {
-                                            subject: `New Document Uploaded: ${docTitle}`,
-                                            html: `<p>A new document has been uploaded for you on the Kandela Portal:</p><h2>${docTitle}</h2><p>Please log in to the portal to view your document.</p><br><p><a href="https://home.thekandelagroup.com">View on The Kandela Group Platform</a></p>`
+                                            subject: `New Document Available: ${docTitle}`,
+                                            html: buildDocumentUploadEmail(docTitle, u.firstName)
                                         }
                                     });
                                 });

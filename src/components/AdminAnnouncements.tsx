@@ -3,6 +3,7 @@ import { db } from '../lib/firebase';
 import { collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, getDocs, updateDoc, writeBatch } from 'firebase/firestore';
 import { Send, Check, Trash2, Megaphone, Users } from 'lucide-react';
 import { UserProfile } from '../types';
+import { buildAnnouncementEmail } from '../lib/emailTemplates';
 
 interface Props { authorName: string; }
 
@@ -133,7 +134,7 @@ const AdminAnnouncements: React.FC<Props> = ({ authorName }) => {
                         to: u.email,
                         message: {
                             subject: `New Announcement: ${title}`,
-                            html: `<p>A new announcement has been posted by <strong>${authorName}</strong>:</p><h2>${title}</h2><p>${content}</p><br><p><a href="https://home.thekandelagroup.com">View on The Kandela Group Platform</a></p>`
+                            html: buildAnnouncementEmail(title, content, authorName, u.firstName)
                         }
                     });
                 });
