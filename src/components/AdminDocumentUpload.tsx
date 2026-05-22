@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db, storage } from '../lib/firebase';
-import { collection, addDoc, getDocs } from 'firebase/firestore';
+import { collection, addDoc, getDocs, writeBatch, doc } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { UserProfile } from '../types';
 import { Upload, Check, FileText, X } from 'lucide-react';
@@ -94,6 +94,26 @@ const AdminDocumentUpload: React.FC = () => {
                                 allowed_uids: audience === 'all' ? [] : selectedUsers,
                                 created_at: new Date()
                             });
+
+                            // Trigger Emails via Firebase Extension
+                            const targetedUsers = audience === 'all' 
+                                ? usersList 
+                                : usersList.filter(u => selectedUsers.includes(u.uid));
+                                
+                            if (targetedUsers.length > 0) {
+                                const batch = writeBatch(db);
+                                targetedUsers.forEach(u => {
+                                    const mailRef = doc(collection(db, 'mail'));
+                                    batch.set(mailRef, {
+                                        to: u.email,
+                                        message: {
+                                            subject: `New Document Uploaded: ${docTitle}`,
+                                            html: `<p>A new document has been uploaded for you on the Kandela Portal:</p><h2>${docTitle}</h2><p>Please log in to the portal to view your document.</p><br><p><a href="https://home.thekandelagroup.com">View on The Kandela Group Platform</a></p>`
+                                        }
+                                    });
+                                });
+                                await batch.commit();
+                            }
                             
                             completedFiles++;
                             setProgress(Math.round((completedFiles / files.length) * 100));

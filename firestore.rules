@@ -39,5 +39,8 @@ service cloud.firestore {
       );
       allow write: if isAdmin();
     }
+    match /mail/{mailId} {
+      allow create: if isAdmin();
+    }
   }
 }
