@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../lib/firebase';
-import { collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy } from 'firebase/firestore';
-import { Send, Check, Trash2, Megaphone } from 'lucide-react';
+import { collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, getDocs, updateDoc } from 'firebase/firestore';
+import { Send, Check, Trash2, Megaphone, Users } from 'lucide-react';
+import { UserProfile } from '../types';
 
 interface Props { authorName: string; }
 
@@ -13,15 +14,62 @@ const AdminAnnouncements: React.FC<Props> = ({ authorName }) => {
     const [sending, setSending] = useState(false);
     const [sent, setSent] = useState(false);
     const [announcements, setAnnouncements] = useState<any[]>([]);
+    
+    // Targeting State
+    const [targetType, setTargetType] = useState('all'); // 'all', 'category', 'individuals'
+    const [users, setUsers] = useState<UserProfile[]>([]);
+    
+    // Category Filters
+    const [filterCompany, setFilterCompany] = useState('All');
+    const [filterAccredited, setFilterAccredited] = useState('All');
+    const [filterCheckSize, setFilterCheckSize] = useState('All');
+    const [filterOpenToDeals, setFilterOpenToDeals] = useState('All');
+    
+    // Individual Selection
+    const [selectedUids, setSelectedUids] = useState<string[]>([]);
 
     useEffect(() => {
+        // Fetch announcements
         const q = query(collection(db, 'announcements'), orderBy('created_at', 'desc'));
         const unsubscribe = onSnapshot(q, (snapshot) => {
             const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             setAnnouncements(data);
         });
+
+        // Fetch users for targeting
+        const fetchUsers = async () => {
+            const snap = await getDocs(collection(db, 'users'));
+            setUsers(snap.docs.map(d => ({ uid: d.id, ...d.data() } as UserProfile)).filter(u => u.role !== 'admin'));
+        };
+        fetchUsers();
+
+        // One-time automatic migration for old announcements
+        const migrateOldAnnouncements = async () => {
+            try {
+                const snap = await getDocs(collection(db, 'announcements'));
+                snap.docs.forEach(d => {
+                    if (d.data().target_audience === undefined) {
+                        updateDoc(d.ref, { target_audience: 'all' });
+                    }
+                });
+            } catch (e) { console.error("Migration error", e); }
+        };
+        migrateOldAnnouncements();
+
         return () => unsubscribe();
     }, []);
+
+    const uniqueCompanies = Array.from(new Set(users.map(u => u.company).filter(Boolean))).sort() as string[];
+    const uniqueCheckSizes = Array.from(new Set(users.map(u => u.preferences?.checkSize).filter(Boolean))).sort() as string[];
+
+    // Calculate how many users match the current category filters
+    const matchedCategoryUsers = users.filter(u => {
+        const matchCompany = filterCompany === 'All' || u.company === filterCompany;
+        const matchAccredited = filterAccredited === 'All' || u.preferences?.accreditedStatus === filterAccredited;
+        const matchCheckSize = filterCheckSize === 'All' || u.preferences?.checkSize === filterCheckSize;
+        const matchDeals = filterOpenToDeals === 'All' || (filterOpenToDeals === 'Yes' ? u.preferences?.openToNewDeals === true : u.preferences?.openToNewDeals === false);
+        return matchCompany && matchAccredited && matchCheckSize && matchDeals;
+    });
 
     const handleDelete = async (id: string) => {
         if (!window.confirm("Are you sure you want to delete this announcement?")) return;
@@ -32,51 +80,172 @@ const AdminAnnouncements: React.FC<Props> = ({ authorName }) => {
         }
     };
 
+    const toggleUserSelection = (uid: string) => {
+        if (selectedUids.includes(uid)) {
+            setSelectedUids(selectedUids.filter(id => id !== uid));
+        } else {
+            setSelectedUids([...selectedUids, uid]);
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        
+        let target_audience = 'all';
+        let allowed_uids: string[] = [];
+
+        if (targetType === 'category') {
+            if (matchedCategoryUsers.length === 0) {
+                alert("Your selected categories do not match any investors.");
+                return;
+            }
+            target_audience = 'custom';
+            allowed_uids = matchedCategoryUsers.map(u => u.uid);
+        } else if (targetType === 'individuals') {
+            if (selectedUids.length === 0) {
+                alert("Please select at least one investor.");
+                return;
+            }
+            target_audience = 'custom';
+            allowed_uids = selectedUids;
+        }
+
         setSending(true);
         try {
             await addDoc(collection(db, 'announcements'), {
-                title, content, author_name: authorName, created_at: new Date()
+                title, content, author_name: authorName, created_at: new Date(),
+                target_audience,
+                allowed_uids
             });
-            setSent(true); setTitle(''); setContent('');
+            setSent(true); 
+            setTitle(''); 
+            setContent('');
+            setSelectedUids([]);
             setTimeout(() => setSent(false), 3000);
         } catch (e) { console.error(e); } finally { setSending(false); }
     };
 
     return (
-        <div className="max-w-3xl">
+        <div className="max-w-4xl">
             <div className="mb-8">
                 <div className="flex items-center gap-3 mb-1">
                     <div className="w-1 h-8 bg-teal-600 rounded" />
                     <h1 className="text-3xl font-serif text-slate-800">Post Announcement</h1>
                 </div>
-                <p className="text-slate-500 font-light pl-4">Broadcast a message to all investors. It will appear in their communications feed.</p>
+                <p className="text-slate-500 font-light pl-4">Broadcast a message to your investors. You can target everyone, or select specific segments.</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-5">
-                <div>
-                    <label className="text-xs text-slate-500 uppercase tracking-wider font-medium block mb-1">Subject / Title</label>
-                    <input
-                        type="text" required value={title} onChange={e => setTitle(e.target.value)}
-                        className={fieldClass} placeholder="e.g., Q3 2026 Platform Update"
-                    />
-                </div>
-                <div>
-                    <label className="text-xs text-slate-500 uppercase tracking-wider font-medium block mb-1">Message</label>
-                    <textarea
-                        required value={content} onChange={e => setContent(e.target.value)}
-                        rows={8} className={fieldClass + ' resize-none'}
-                        placeholder="Write your message here..."
-                    />
+            <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+                <div className="p-6 space-y-6">
+                    <div>
+                        <label className="text-xs text-slate-500 uppercase tracking-wider font-medium block mb-2">Target Audience</label>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            {['all', 'category', 'individuals'].map(type => (
+                                <button
+                                    key={type} type="button"
+                                    onClick={() => setTargetType(type)}
+                                    className={`px-4 py-3 rounded-lg border text-sm font-medium transition-all text-left ${targetType === type ? 'bg-teal-50 border-teal-300 text-teal-800 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                                >
+                                    <div className="flex items-center justify-between">
+                                        {type === 'all' && 'All Investors'}
+                                        {type === 'category' && 'Filter by Category'}
+                                        {type === 'individuals' && 'Select Individuals'}
+                                        <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${targetType === type ? 'border-teal-600' : 'border-slate-300'}`}>
+                                            {targetType === type && <div className="w-2 h-2 rounded-full bg-teal-600" />}
+                                        </div>
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Category Targeting */}
+                    {targetType === 'category' && (
+                        <div className="bg-slate-50 border border-slate-200 p-5 rounded-xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div>
+                                <label className="text-xs text-slate-500 uppercase tracking-wider font-medium block mb-1.5">Company</label>
+                                <select value={filterCompany} onChange={e => setFilterCompany(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none">
+                                    <option value="All">All Companies</option>
+                                    {uniqueCompanies.map(c => <option key={c} value={c}>{c}</option>)}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="text-xs text-slate-500 uppercase tracking-wider font-medium block mb-1.5">Accredited</label>
+                                <select value={filterAccredited} onChange={e => setFilterAccredited(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none">
+                                    <option value="All">All Statuses</option>
+                                    <option value="Accredited">Accredited</option>
+                                    <option value="Non-Accredited">Non-Accredited</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="text-xs text-slate-500 uppercase tracking-wider font-medium block mb-1.5">Check Size</label>
+                                <select value={filterCheckSize} onChange={e => setFilterCheckSize(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none">
+                                    <option value="All">All Sizes</option>
+                                    {uniqueCheckSizes.map(s => <option key={s} value={s}>{s}</option>)}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="text-xs text-slate-500 uppercase tracking-wider font-medium block mb-1.5">Open to Deals</label>
+                                <select value={filterOpenToDeals} onChange={e => setFilterOpenToDeals(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none">
+                                    <option value="All">All Preferences</option>
+                                    <option value="Yes">Yes</option>
+                                    <option value="No">No</option>
+                                </select>
+                            </div>
+                            <div className="col-span-full pt-2">
+                                <p className="text-sm font-medium text-teal-700 flex items-center gap-2">
+                                    <Users size={16} /> This message will be sent to {matchedCategoryUsers.length} investor{matchedCategoryUsers.length !== 1 ? 's' : ''}.
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Individual Targeting */}
+                    {targetType === 'individuals' && (
+                        <div className="bg-slate-50 border border-slate-200 p-5 rounded-xl">
+                            <label className="text-xs text-slate-500 uppercase tracking-wider font-medium block mb-3">Select Recipients ({selectedUids.length} selected)</label>
+                            <div className="max-h-48 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-2 pr-2">
+                                {users.map(user => (
+                                    <label key={user.uid} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${selectedUids.includes(user.uid) ? 'bg-teal-50 border-teal-200' : 'bg-white border-slate-200 hover:border-teal-200'}`}>
+                                        <input 
+                                            type="checkbox" 
+                                            checked={selectedUids.includes(user.uid)}
+                                            onChange={() => toggleUserSelection(user.uid)}
+                                            className="w-4 h-4 text-teal-600 rounded focus:ring-teal-500"
+                                        />
+                                        <div>
+                                            <p className="text-sm font-medium text-slate-800">{user.firstName} {user.lastName}</p>
+                                            <p className="text-xs text-slate-500">{user.email}</p>
+                                        </div>
+                                    </label>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="pt-2">
+                        <label className="text-xs text-slate-500 uppercase tracking-wider font-medium block mb-1">Subject / Title</label>
+                        <input
+                            type="text" required value={title} onChange={e => setTitle(e.target.value)}
+                            className={fieldClass} placeholder="e.g., Q3 2026 Platform Update"
+                        />
+                    </div>
+                    <div>
+                        <label className="text-xs text-slate-500 uppercase tracking-wider font-medium block mb-1">Message</label>
+                        <textarea
+                            required value={content} onChange={e => setContent(e.target.value)}
+                            rows={8} className={fieldClass + ' resize-none'}
+                            placeholder="Write your message here..."
+                        />
+                    </div>
                 </div>
 
-                <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                <div className="bg-slate-50 p-6 flex items-center justify-between border-t border-slate-200">
                     <p className="text-xs text-slate-400">Signed: <span className="text-slate-600">{authorName}</span></p>
                     <button
                         type="submit" disabled={sending}
                         className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                            sent ? 'bg-green-50 text-green-700 border border-green-300' : 'bg-teal-700 hover:bg-teal-600 text-white'
+                            sent ? 'bg-green-50 text-green-700 border border-green-300' : 'bg-teal-700 hover:bg-teal-600 text-white shadow-sm'
                         }`}
                     >
                         {sent ? <><Check size={16} /> Posted!</> : <><Send size={16} /> {sending ? 'Posting...' : 'Post Announcement'}</>}
@@ -104,10 +273,17 @@ const AdminAnnouncements: React.FC<Props> = ({ authorName }) => {
                                 >
                                     <Trash2 size={18} />
                                 </button>
-                                <h3 className="font-medium text-slate-800 mb-1 pr-10">{announcement.title}</h3>
-                                <p className="text-sm text-slate-500 font-light mb-3">
-                                    {announcement.created_at?.toDate ? new Date(announcement.created_at.toDate()).toLocaleDateString() : 'Just now'} • Signed by {announcement.author_name}
-                                </p>
+                                <div className="pr-10">
+                                    <div className="flex items-center gap-3 mb-1">
+                                        <h3 className="font-medium text-slate-800">{announcement.title}</h3>
+                                        <span className={`px-2 py-0.5 rounded text-[10px] uppercase tracking-wider font-semibold ${announcement.target_audience === 'custom' ? 'bg-violet-100 text-violet-700' : 'bg-slate-100 text-slate-600'}`}>
+                                            {announcement.target_audience === 'custom' ? `Custom Target (${announcement.allowed_uids?.length || 0})` : 'All Investors'}
+                                        </span>
+                                    </div>
+                                    <p className="text-sm text-slate-500 font-light mb-3">
+                                        {announcement.created_at?.toDate ? new Date(announcement.created_at.toDate()).toLocaleDateString() : 'Just now'} • Signed by {announcement.author_name}
+                                    </p>
+                                </div>
                                 <p className="text-sm text-slate-700 whitespace-pre-wrap">{announcement.content}</p>
                             </div>
                         ))}

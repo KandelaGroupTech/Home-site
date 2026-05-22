@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../lib/firebase';
-import { collection, query, orderBy, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
 import { Announcement } from '../types';
 import { Mail, Calendar, ChevronDown, ChevronUp } from 'lucide-react';
 
@@ -12,9 +13,27 @@ const InvestorFeed: React.FC = () => {
     useEffect(() => {
         const fetchAnnouncements = async () => {
             try {
-                const q = query(collection(db, 'announcements'), orderBy('created_at', 'desc'));
-                const snapshot = await getDocs(q);
-                const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Announcement[];
+                const user = getAuth().currentUser;
+                if (!user) return;
+
+                const qAll = query(collection(db, 'announcements'), where('target_audience', '==', 'all'));
+                const qCustom = query(collection(db, 'announcements'), where('allowed_uids', 'array-contains', user.uid));
+
+                const [snapAll, snapCustom] = await Promise.all([getDocs(qAll), getDocs(qCustom)]);
+
+                // Merge and deduplicate
+                const allDocs = [...snapAll.docs, ...snapCustom.docs];
+                const uniqueDocs = Array.from(new Map(allDocs.map(doc => [doc.id, doc])).values());
+
+                // Sort by created_at descending locally
+                const data = uniqueDocs
+                    .map(doc => ({ id: doc.id, ...doc.data() }) as Announcement)
+                    .sort((a, b) => {
+                        const timeA = a.created_at?.toMillis ? a.created_at.toMillis() : 0;
+                        const timeB = b.created_at?.toMillis ? b.created_at.toMillis() : 0;
+                        return timeB - timeA;
+                    });
+
                 setAnnouncements(data);
                 if (data.length > 0) setExpanded(data[0].id); // open newest by default
             } catch (error) {
