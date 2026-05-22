@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { PlatformDocument } from '../types';
-import { Folder, FolderOpen, FileText, Download, CheckSquare, Square, Search, ZoomIn, ZoomOut, ChevronLeft } from 'lucide-react';
+import { Folder, FolderOpen, FileText, Download, CheckSquare, Square, Search, ZoomIn, ZoomOut, ChevronLeft, Loader2 } from 'lucide-react';
 import { db } from '../lib/firebase';
 import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
+import { PDFDocument, rgb, degrees, StandardFonts } from 'pdf-lib';
 
 interface Category {
     key: string;
@@ -25,6 +27,7 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({ documents, loading, pag
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [showUnreadOnly, setShowUnreadOnly] = useState(false);
     const [localDocs, setLocalDocs] = useState<PlatformDocument[]>(documents);
+    const [downloadingDoc, setDownloadingDoc] = useState<string | null>(null);
 
     useEffect(() => {
         setLocalDocs(documents);
@@ -89,10 +92,52 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({ documents, loading, pag
         }
     };
 
+    const handleWatermarkDownload = async (docObj: PlatformDocument) => {
+        const user = getAuth().currentUser;
+        const email = user?.email || 'Confidential';
+
+        try {
+            setDownloadingDoc(docObj.id);
+            const existingPdfBytes = await fetch(docObj.file_url).then(res => res.arrayBuffer());
+            const pdfDoc = await PDFDocument.load(existingPdfBytes);
+            const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+            
+            const pages = pdfDoc.getPages();
+            for (const page of pages) {
+                const { width, height } = page.getSize();
+                page.drawText(email, {
+                    x: width / 6,
+                    y: height / 2,
+                    size: 40,
+                    font,
+                    color: rgb(0.8, 0.8, 0.8),
+                    opacity: 0.3,
+                    rotate: degrees(45),
+                });
+            }
+            
+            const pdfBytes = await pdfDoc.save();
+            const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = docObj.title.endsWith('.pdf') ? docObj.title : `${docObj.title}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error("Watermark failed, falling back to direct download", err);
+            window.open(docObj.file_url, '_blank');
+        } finally {
+            setDownloadingDoc(null);
+        }
+    };
+
     const handleDownloadSelected = () => {
         const toDownload = displayedDocs.filter(d => selectedIds.has(d.id));
         toDownload.forEach(doc => {
-            window.open(doc.file_url, '_blank');
+            handleWatermarkDownload(doc);
         });
     };
 
@@ -128,10 +173,10 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({ documents, loading, pag
                         </div>
                         <button 
                             onClick={handleDownloadSelected}
-                            disabled={selectedIds.size === 0}
+                            disabled={selectedIds.size === 0 || downloadingDoc !== null}
                             className="text-xs font-semibold uppercase text-slate-500 hover:text-teal-700 disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1"
                         >
-                            <Download size={14} /> Download Selected
+                            {downloadingDoc ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />} Download Selected
                         </button>
                     </div>
 
@@ -233,14 +278,13 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({ documents, loading, pag
                                 />
                             </div>
                             <div className="bg-white p-4 border-t border-slate-200 flex justify-center shrink-0">
-                                <a 
-                                    href={selectedDoc.file_url}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="bg-black text-white hover:bg-slate-800 transition-colors px-8 py-2.5 rounded-full text-sm font-bold tracking-wider uppercase flex items-center gap-2 shadow-lg"
+                                <button 
+                                    onClick={() => handleWatermarkDownload(selectedDoc)}
+                                    disabled={downloadingDoc === selectedDoc.id}
+                                    className="bg-black text-white hover:bg-slate-800 transition-colors px-8 py-2.5 rounded-full text-sm font-bold tracking-wider uppercase flex items-center gap-2 shadow-lg disabled:opacity-70"
                                 >
-                                    <Download size={16} /> Download
-                                </a>
+                                    {downloadingDoc === selectedDoc.id ? <><Loader2 size={16} className="animate-spin" /> Preparing...</> : <><Download size={16} /> Download</>}
+                                </button>
                             </div>
                         </>
                     ) : (

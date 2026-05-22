@@ -31,6 +31,9 @@ export interface UserProfile {
         accreditedStatus: AccreditedStatus | '';
         checkSize: CheckSize | '';
     };
+    onboardingCompleted?: boolean;
+    ndaSigned?: boolean;
+    ndaSignedAt?: any; // Firestore Timestamp
     updatedAt: any; // Firestore Timestamp
 }
 

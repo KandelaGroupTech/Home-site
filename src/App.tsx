@@ -6,6 +6,8 @@ import Dashboard from './pages/Dashboard';
 import UpdatePassword from './pages/UpdatePassword';
 import ProtectedRoute from './components/ProtectedRoute';
 
+import OnboardingWizard from './pages/OnboardingWizard';
+
 const App: React.FC = () => {
     return (
         <Router>
@@ -13,6 +15,14 @@ const App: React.FC = () => {
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/update-password" element={<UpdatePassword />} />
+                <Route
+                    path="/onboarding"
+                    element={
+                        <ProtectedRoute>
+                            <OnboardingWizard />
+                        </ProtectedRoute>
+                    }
+                />
                 <Route
                     path="/dashboard"
                     element={

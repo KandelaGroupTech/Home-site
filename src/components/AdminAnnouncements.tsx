@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../lib/firebase';
-import { collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, getDocs, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, getDocs, updateDoc, writeBatch } from 'firebase/firestore';
 import { Send, Check, Trash2, Megaphone, Users } from 'lucide-react';
 import { UserProfile } from '../types';
 
@@ -110,6 +110,12 @@ const AdminAnnouncements: React.FC<Props> = ({ authorName }) => {
             allowed_uids = selectedUids;
         }
 
+        const targetedUsers = targetType === 'all' 
+            ? users 
+            : targetType === 'category' 
+                ? matchedCategoryUsers 
+                : users.filter(u => selectedUids.includes(u.uid));
+
         setSending(true);
         try {
             await addDoc(collection(db, 'announcements'), {
@@ -117,6 +123,23 @@ const AdminAnnouncements: React.FC<Props> = ({ authorName }) => {
                 target_audience,
                 allowed_uids
             });
+
+            // Trigger Emails via Firebase Extension
+            if (targetedUsers.length > 0) {
+                const batch = writeBatch(db);
+                targetedUsers.forEach(u => {
+                    const mailRef = doc(collection(db, 'mail'));
+                    batch.set(mailRef, {
+                        to: u.email,
+                        message: {
+                            subject: `New Announcement: ${title}`,
+                            html: `<p>A new announcement has been posted by <strong>${authorName}</strong>:</p><h2>${title}</h2><p>${content}</p><br><p><a href="https://home.thekandelagroup.com">View on The Kandela Group Platform</a></p>`
+                        }
+                    });
+                });
+                await batch.commit();
+            }
+
             setSent(true); 
             setTitle(''); 
             setContent('');
