@@ -13,7 +13,7 @@ import {
     FolderClosed,
     HelpCircle,
     Globe,
-    FileText
+    X
 } from 'lucide-react';
 import { auth } from '../lib/firebase';
 import { signOut } from 'firebase/auth';
@@ -22,9 +22,11 @@ interface SidebarProps {
     role: UserRole | undefined;
     activeTab: string;
     setActiveTab: (tab: string) => void;
+    isMobileOpen: boolean;
+    setIsMobileOpen: (val: boolean) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ role, activeTab, setActiveTab }) => {
+const Sidebar: React.FC<SidebarProps> = ({ role, activeTab, setActiveTab, isMobileOpen, setIsMobileOpen }) => {
     const handleLogout = async () => {
         await signOut(auth);
     };
@@ -48,7 +50,7 @@ const Sidebar: React.FC<SidebarProps> = ({ role, activeTab, setActiveTab }) => {
     const navItems = role === 'admin' ? adminNav : investorNav;
 
     return (
-        <aside className="w-64 h-screen fixed left-0 top-0 flex flex-col" style={{ background: 'linear-gradient(160deg, #0a4040 0%, #064e4e 60%, #053a3a 100%)' }}>
+        <aside className={`w-64 h-[100dvh] fixed left-0 top-0 flex flex-col z-50 transform transition-transform duration-300 ease-in-out ${isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`} style={{ background: 'linear-gradient(160deg, #0a4040 0%, #064e4e 60%, #053a3a 100%)' }}>
             {/* Geometric accent shape inside sidebar */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <div
@@ -62,7 +64,7 @@ const Sidebar: React.FC<SidebarProps> = ({ role, activeTab, setActiveTab }) => {
             </div>
 
             {/* Logo */}
-            <div className="relative z-10 px-6 py-7 border-b border-white/10">
+            <div className="relative z-10 px-6 py-7 border-b border-white/10 flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-3">
                     <div className="w-9 h-9 bg-white/15 rounded flex items-center justify-center border border-white/20 shadow-inner">
                         <span className="font-serif text-white font-bold text-xl leading-none">K</span>
@@ -74,6 +76,9 @@ const Sidebar: React.FC<SidebarProps> = ({ role, activeTab, setActiveTab }) => {
                         </p>
                     </div>
                 </div>
+                <button onClick={() => setIsMobileOpen(false)} className="md:hidden text-white/50 hover:text-white p-1 -mr-2">
+                    <X size={20} />
+                </button>
             </div>
 
             {/* Nav */}

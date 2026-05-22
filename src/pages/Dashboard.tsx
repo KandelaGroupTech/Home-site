@@ -14,10 +14,12 @@ import AdminDocumentUpload from '../components/AdminDocumentUpload';
 import AdminManageDocuments from '../components/AdminManageDocuments';
 import AdminAnnouncements from '../components/AdminAnnouncements';
 import AdminDirectory from '../components/AdminDirectory';
+import { Menu } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
     const { user, profile, loading } = useAuth();
     const [activeTab, setActiveTab] = useState<string>('welcome');
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     if (loading) {
         return (
@@ -65,11 +67,27 @@ const Dashboard: React.FC = () => {
 
     return (
         <div className="min-h-screen w-full flex bg-[#f4f9f8]">
-            <Sidebar role={role} activeTab={activeTab} setActiveTab={setActiveTab} />
+            <Sidebar role={role} activeTab={activeTab} setActiveTab={(t) => { setActiveTab(t); setIsMobileMenuOpen(false); }} isMobileOpen={isMobileMenuOpen} setIsMobileOpen={setIsMobileMenuOpen} />
 
-            <main className="flex-1 ml-64 min-h-screen relative overflow-hidden">
+            {/* Mobile Overlay */}
+            {isMobileMenuOpen && (
+                <div className="fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity" onClick={() => setIsMobileMenuOpen(false)} />
+            )}
+
+            <main className="flex-1 md:ml-64 min-h-screen relative overflow-hidden flex flex-col">
+                {/* Mobile Header */}
+                <div className="md:hidden shrink-0 flex items-center px-4 py-3 bg-white border-b border-slate-200 z-30 shadow-sm relative">
+                    <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 -ml-2 text-slate-600 hover:text-teal-600 hover:bg-slate-50 rounded-lg transition-colors">
+                        <Menu size={24} />
+                    </button>
+                    <div className="ml-3 font-serif text-teal-800 text-lg font-semibold flex items-center gap-2">
+                        <span className="w-6 h-6 bg-teal-600 text-white rounded flex items-center justify-center text-sm">K</span>
+                        Kandela Portal
+                    </div>
+                </div>
+
                 {/* Geometric brand-inspired decorative shapes */}
-                <div className="pointer-events-none absolute inset-0 overflow-hidden">
+                <div className="pointer-events-none absolute inset-0 overflow-hidden z-0">
                     {/* Large angular teal plane - top right */}
                     <div
                         className="absolute -top-24 right-0 w-[520px] h-[380px] bg-teal-700/10"
@@ -89,7 +107,7 @@ const Dashboard: React.FC = () => {
                     />
                 </div>
 
-                <div className="relative z-10 max-w-6xl mx-auto py-10 px-8">
+                <div className="relative z-10 max-w-6xl w-full mx-auto py-6 px-4 md:py-10 md:px-8 flex-1">
                     {renderContent()}
                 </div>
             </main>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { PlatformDocument } from '../types';
-import { Folder, FolderOpen, FileText, Download, CheckSquare, Square, Search, ZoomIn, ZoomOut } from 'lucide-react';
+import { Folder, FolderOpen, FileText, Download, CheckSquare, Square, Search, ZoomIn, ZoomOut, ChevronLeft } from 'lucide-react';
 import { db } from '../lib/firebase';
 import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
 
@@ -97,7 +97,7 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({ documents, loading, pag
     };
 
     return (
-        <div className="max-w-6xl w-full h-[calc(100vh-120px)] flex flex-col">
+        <div className="max-w-6xl w-full h-[calc(100vh-140px)] md:h-[calc(100vh-120px)] flex flex-col">
             {/* Header */}
             <div className="mb-6 shrink-0">
                 <div className="flex items-center gap-3 mb-1">
@@ -107,10 +107,10 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({ documents, loading, pag
             </div>
 
             {/* Split Layout */}
-            <div className="flex-1 flex gap-5 overflow-hidden">
+            <div className="flex-1 flex flex-col md:flex-row gap-4 md:gap-5 overflow-hidden">
                 
                 {/* LEFT PANE: Folders / Documents */}
-                <div className="w-[450px] flex flex-col bg-white border border-slate-200 shadow-sm rounded-xl overflow-hidden shrink-0">
+                <div className={`w-full md:w-[450px] flex-col bg-white border border-slate-200 shadow-sm rounded-xl overflow-hidden shrink-0 ${selectedDoc ? 'hidden md:flex' : 'flex'}`}>
                     
                     {/* Toolbar */}
                     <div className="p-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
@@ -214,17 +214,15 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({ documents, loading, pag
                 </div>
 
                 {/* RIGHT PANE: Document Preview */}
-                <div className="flex-1 bg-slate-100/50 border border-slate-200 rounded-xl overflow-hidden flex flex-col shadow-inner">
+                <div className={`flex-1 bg-white border border-slate-200 shadow-sm rounded-xl overflow-hidden flex-col ${!selectedDoc ? 'hidden md:flex' : 'flex'}`}>
                     {selectedDoc ? (
                         <>
-                            <div className="bg-slate-800 text-white p-2.5 flex items-center justify-between shrink-0">
-                                <div className="flex items-center gap-3">
-                                    <Search size={16} className="text-slate-400" />
-                                    <span className="text-sm font-medium truncate max-w-md">{selectedDoc.title}</span>
-                                </div>
-                                <div className="flex items-center gap-3 text-slate-400">
-                                    <button className="hover:text-white"><ZoomOut size={16} /></button>
-                                    <button className="hover:text-white"><ZoomIn size={16} /></button>
+                            <div className="h-16 border-b border-slate-200 bg-slate-50 flex items-center justify-between px-4 md:px-6 shrink-0">
+                                <div className="flex items-center gap-3 overflow-hidden">
+                                    <button onClick={() => setSelectedDoc(null)} className="md:hidden p-1 -ml-1 text-slate-400 hover:text-teal-600 transition-colors">
+                                        <ChevronLeft size={24} />
+                                    </button>
+                                    <h2 className="font-medium text-slate-800 text-base md:text-lg truncate pr-4">{selectedDoc.title}</h2>
                                 </div>
                             </div>
                             <div className="flex-1 relative w-full h-full bg-slate-300">

@@ -34,18 +34,18 @@ const InvestorWelcome: React.FC<Props> = ({ profile, setActiveTab }) => {
     return (
         <div className="max-w-4xl">
             {/* Header */}
-            <div className="mb-8 flex items-start justify-between">
+            <div className="mb-8 flex flex-col md:flex-row md:items-start justify-between gap-4">
                 <div>
                     <div className="flex items-center gap-3 mb-1">
                         <div className="w-1 h-8 bg-teal-600 rounded" />
                         <h1 className="text-3xl font-serif text-slate-800">Welcome, {profile?.firstName || 'Investor'}</h1>
                     </div>
-                    <p className="text-slate-500 font-light pl-4">Here are the latest updates from The Kandela Group.</p>
+                    <p className="text-slate-500 font-light pl-4 text-sm md:text-base">Here are the latest updates from The Kandela Group.</p>
                 </div>
                 
                 <button 
                     onClick={() => setActiveTab('profile')}
-                    className="flex items-center gap-2 bg-white border border-slate-200 hover:border-teal-300 hover:bg-teal-50 px-4 py-2 rounded-full text-sm font-medium text-slate-600 transition-all shadow-sm"
+                    className="flex items-center justify-center gap-2 bg-white border border-slate-200 hover:border-teal-300 hover:bg-teal-50 px-4 py-2 rounded-full text-sm font-medium text-slate-600 transition-all shadow-sm w-full md:w-auto"
                 >
                     <User size={16} className="text-teal-600" />
                     Edit Profile
