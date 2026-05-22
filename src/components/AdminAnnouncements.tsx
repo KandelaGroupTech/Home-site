@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { db } from '../lib/firebase';
-import { collection, addDoc } from 'firebase/firestore';
-import { Send, Check } from 'lucide-react';
+import { collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { Send, Check, Trash2, Megaphone } from 'lucide-react';
 
 interface Props { authorName: string; }
 
@@ -12,6 +12,25 @@ const AdminAnnouncements: React.FC<Props> = ({ authorName }) => {
     const [content, setContent] = useState('');
     const [sending, setSending] = useState(false);
     const [sent, setSent] = useState(false);
+    const [announcements, setAnnouncements] = useState<any[]>([]);
+
+    useEffect(() => {
+        const q = query(collection(db, 'announcements'), orderBy('created_at', 'desc'));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setAnnouncements(data);
+        });
+        return () => unsubscribe();
+    }, []);
+
+    const handleDelete = async (id: string) => {
+        if (!window.confirm("Are you sure you want to delete this announcement?")) return;
+        try {
+            await deleteDoc(doc(db, 'announcements', id));
+        } catch (error) {
+            console.error("Error deleting announcement:", error);
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -64,6 +83,37 @@ const AdminAnnouncements: React.FC<Props> = ({ authorName }) => {
                     </button>
                 </div>
             </form>
+
+            {/* Sent Announcements List */}
+            <div className="mt-12">
+                <h2 className="text-xl font-serif text-slate-800 mb-6 flex items-center gap-2">
+                    <Megaphone size={20} className="text-teal-600" />
+                    Sent Announcements
+                </h2>
+                
+                {announcements.length === 0 ? (
+                    <p className="text-slate-500 font-light italic">No announcements sent yet.</p>
+                ) : (
+                    <div className="space-y-4">
+                        {announcements.map((announcement) => (
+                            <div key={announcement.id} className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow relative group">
+                                <button 
+                                    onClick={() => handleDelete(announcement.id)}
+                                    className="absolute top-4 right-4 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-2 rounded-full hover:bg-red-50"
+                                    title="Delete announcement"
+                                >
+                                    <Trash2 size={18} />
+                                </button>
+                                <h3 className="font-medium text-slate-800 mb-1 pr-10">{announcement.title}</h3>
+                                <p className="text-sm text-slate-500 font-light mb-3">
+                                    {announcement.created_at?.toDate ? new Date(announcement.created_at.toDate()).toLocaleDateString() : 'Just now'} • Signed by {announcement.author_name}
+                                </p>
+                                <p className="text-sm text-slate-700 whitespace-pre-wrap">{announcement.content}</p>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
         </div>
     );
 };
