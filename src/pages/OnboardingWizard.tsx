@@ -5,8 +5,31 @@ import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import { UserProfile, AccreditedStatus, CheckSize } from '../types';
 import { Shield, ChevronRight, CheckCircle2, KeyRound } from 'lucide-react';
+import PhoneInput from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
 
 const fieldClass = "w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-800 focus:border-teal-500 focus:ring-2 focus:ring-teal-100 focus:outline-none transition-all font-light text-sm";
+
+const phoneStyles = `
+  .PhoneInput {
+    display: flex;
+    align-items: center;
+  }
+  .PhoneInputInput {
+    flex: 1;
+    min-width: 0;
+    border: none !important;
+    background: transparent !important;
+    outline: none !important;
+    box-shadow: none !important;
+    margin-left: 12px;
+    font-size: inherit;
+    color: inherit;
+  }
+  .PhoneInputCountry {
+    margin-right: 4px;
+  }
+`;
 
 const OnboardingWizard: React.FC = () => {
     const [step, setStep] = useState(1);
@@ -130,6 +153,7 @@ const OnboardingWizard: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6">
+            <style>{phoneStyles}</style>
             <div className="max-w-2xl w-full">
                 
                 {/* Header */}
@@ -222,11 +246,11 @@ const OnboardingWizard: React.FC = () => {
                                 </div>
                                 <div>
                                     <label className="text-xs text-slate-500 uppercase tracking-wider font-medium block mb-1.5">Phone Number</label>
-                                    <input 
-                                        type="tel" 
-                                        className={fieldClass} 
-                                        value={userProfile.phone} 
-                                        onChange={e => handleUpdateField('phone', e.target.value)} 
+                                    <PhoneInput
+                                        defaultCountry="US"
+                                        value={userProfile.phone}
+                                        onChange={(v) => handleUpdateField('phone', v || '')}
+                                        className={fieldClass}
                                         placeholder="(555) 555-5555"
                                     />
                                 </div>

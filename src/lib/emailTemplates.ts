@@ -220,8 +220,8 @@ export function buildWelcomeEmail(email: string, tempPassword: string, recipient
           <p style="margin:0 0 16px;color:#0f172a;font-size:14px;font-weight:500;">
             Temporary Password:
           </p>
-          <div style="background-color:#ffffff;border:1px dashed #94a3b8;border-radius:6px;padding:16px;text-align:center;margin-bottom:20px;">
-            <code style="font-family:monospace;font-size:20px;color:#0f172a;letter-spacing:3px;background:none;padding:0;user-select:all;">${tempPassword}</code>
+          <div style="text-align:center;margin-bottom:20px;">
+            <div style="display:inline-block;background-color:#e2e8f0;border-radius:4px;padding:8px 12px;font-family:monospace;font-size:18px;color:#0f172a;user-select:all;letter-spacing:0;">${tempPassword}</div>
           </div>
           <div style="width:32px;height:1px;background-color:#006464;margin-bottom:16px;"></div>
           <p style="margin:0;color:#334155;font-size:12px;line-height:1.7;font-weight:300;">
