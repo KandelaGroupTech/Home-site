@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { db, firebaseConfig, functions } from '../lib/firebase';
+import { db, firebaseConfig } from '../lib/firebase';
 import { collection, getDocs, doc, setDoc, serverTimestamp, deleteDoc, addDoc } from 'firebase/firestore';
-import { httpsCallable } from 'firebase/functions';
 import { initializeApp } from 'firebase/app';
 import { getAuth, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
 import { UserProfile } from '../types';
@@ -57,12 +56,11 @@ const AdminDirectory: React.FC = () => {
     const handleDeleteUser = async (uid: string, name: string) => {
         if (!window.confirm(`Are you sure you want to completely remove ${name} from the platform? They will lose all access.`)) return;
         try {
-            const deleteInvestorFn = httpsCallable(functions, 'deleteInvestor');
-            await deleteInvestorFn({ uid });
+            await deleteDoc(doc(db, 'users', uid));
             fetchUsers(); // Refresh list
-        } catch (err: any) {
+        } catch (err) {
             console.error('Error deleting user:', err);
-            alert(`Failed to delete user: ${err.message}`);
+            alert('Failed to delete user.');
         }
     };
 
