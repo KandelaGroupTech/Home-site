@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { getAuth } from 'firebase/auth';
+import { getAuth, updatePassword } from 'firebase/auth';
 import { db } from '../lib/firebase';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import { UserProfile, AccreditedStatus, CheckSize } from '../types';
-import { Shield, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { Shield, ChevronRight, CheckCircle2, KeyRound } from 'lucide-react';
 
 const fieldClass = "w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-800 focus:border-teal-500 focus:ring-2 focus:ring-teal-100 focus:outline-none transition-all font-light text-sm";
 
@@ -14,6 +14,13 @@ const OnboardingWizard: React.FC = () => {
     const [saving, setSaving] = useState(false);
     const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
     const [ndaSignature, setNdaSignature] = useState('');
+    
+    // Password state
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [passwordError, setPasswordError] = useState('');
+    const [changingPassword, setChangingPassword] = useState(false);
+    
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -56,6 +63,32 @@ const OnboardingWizard: React.FC = () => {
             });
         } else {
             setUserProfile({ ...userProfile, [field]: value });
+        }
+    };
+
+    const handleChangePassword = async () => {
+        setPasswordError('');
+        if (newPassword.length < 8) {
+            setPasswordError('Password must be at least 8 characters long.');
+            return;
+        }
+        if (newPassword !== confirmPassword) {
+            setPasswordError('Passwords do not match.');
+            return;
+        }
+
+        setChangingPassword(true);
+        try {
+            const user = getAuth().currentUser;
+            if (user) {
+                await updatePassword(user, newPassword);
+                setStep(2);
+            }
+        } catch (err: any) {
+            console.error('Error updating password:', err);
+            setPasswordError(err.message || 'Failed to update password. Please try again.');
+        } finally {
+            setChangingPassword(false);
         }
     };
 
@@ -110,7 +143,7 @@ const OnboardingWizard: React.FC = () => {
 
                 {/* Progress Bar */}
                 <div className="flex items-center justify-center gap-2 mb-8">
-                    {[1, 2, 3].map(i => (
+                    {[1, 2, 3, 4].map(i => (
                         <div key={i} className={`h-1.5 w-16 rounded-full transition-colors ${step >= i ? 'bg-teal-600' : 'bg-slate-200'}`} />
                     ))}
                 </div>
@@ -119,6 +152,57 @@ const OnboardingWizard: React.FC = () => {
                 <div className="bg-white border border-slate-200 rounded-3xl shadow-xl overflow-hidden p-8 md:p-10">
                     
                     {step === 1 && (
+                        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <div>
+                                <div className="flex items-center gap-3 mb-1">
+                                    <KeyRound className="text-teal-600" size={24} />
+                                    <h2 className="text-xl font-serif text-slate-800">Secure Your Account</h2>
+                                </div>
+                                <p className="text-sm text-slate-500 font-light mb-6">Please change your temporary password to a secure personal password.</p>
+                            </div>
+                            
+                            {passwordError && (
+                                <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm border border-red-100">
+                                    {passwordError}
+                                </div>
+                            )}
+
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="text-xs text-slate-500 uppercase tracking-wider font-medium block mb-1.5">New Password</label>
+                                    <input 
+                                        type="password" 
+                                        className={fieldClass} 
+                                        value={newPassword} 
+                                        onChange={e => setNewPassword(e.target.value)} 
+                                        placeholder="Min. 8 characters"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs text-slate-500 uppercase tracking-wider font-medium block mb-1.5">Confirm Password</label>
+                                    <input 
+                                        type="password" 
+                                        className={fieldClass} 
+                                        value={confirmPassword} 
+                                        onChange={e => setConfirmPassword(e.target.value)} 
+                                        placeholder="Retype password"
+                                    />
+                                </div>
+                            </div>
+                            
+                            <div className="pt-6 flex justify-end">
+                                <button 
+                                    onClick={handleChangePassword}
+                                    disabled={changingPassword || !newPassword || !confirmPassword}
+                                    className="bg-black text-white px-8 py-3 rounded-full text-sm font-semibold tracking-wider flex items-center gap-2 hover:bg-slate-800 transition-colors disabled:opacity-50"
+                                >
+                                    {changingPassword ? 'Updating...' : 'Change Password & Continue'} <ChevronRight size={16} />
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {step === 2 && (
                         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             <div>
                                 <h2 className="text-xl font-serif text-slate-800 mb-1">Professional Details</h2>
@@ -159,7 +243,7 @@ const OnboardingWizard: React.FC = () => {
                         </div>
                     )}
 
-                    {step === 2 && (
+                    {step === 3 && (
                         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             <div>
                                 <h2 className="text-xl font-serif text-slate-800 mb-1">Investment Preferences</h2>
@@ -210,7 +294,7 @@ const OnboardingWizard: React.FC = () => {
                             </div>
                             
                             <div className="pt-6 flex justify-between">
-                                <button onClick={() => setStep(1)} className="px-6 py-3 text-slate-500 text-sm hover:text-slate-800">Back</button>
+                                <button onClick={() => setStep(2)} className="px-6 py-3 text-slate-500 text-sm hover:text-slate-800">Back</button>
                                 <button 
                                     onClick={handleNext}
                                     className="bg-black text-white px-8 py-3 rounded-full text-sm font-semibold tracking-wider flex items-center gap-2 hover:bg-slate-800 transition-colors"
@@ -221,7 +305,7 @@ const OnboardingWizard: React.FC = () => {
                         </div>
                     )}
 
-                    {step === 3 && (
+                    {step === 4 && (
                         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             <div>
                                 <h2 className="text-xl font-serif text-slate-800 mb-1">Confidentiality Agreement</h2>
@@ -249,7 +333,7 @@ const OnboardingWizard: React.FC = () => {
                             </div>
                             
                             <div className="pt-6 flex justify-between items-center">
-                                <button onClick={() => setStep(2)} className="px-6 py-3 text-slate-500 text-sm hover:text-slate-800 disabled:opacity-50" disabled={saving}>Back</button>
+                                <button onClick={() => setStep(3)} className="px-6 py-3 text-slate-500 text-sm hover:text-slate-800 disabled:opacity-50" disabled={saving}>Back</button>
                                 <button 
                                     onClick={handleComplete}
                                     disabled={saving}

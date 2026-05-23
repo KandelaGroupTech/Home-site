@@ -218,8 +218,11 @@ export function buildWelcomeEmail(email: string, tempPassword: string, recipient
             Email: <span style="font-weight:300;">${email}</span>
           </p>
           <p style="margin:0 0 16px;color:#0f172a;font-size:14px;font-weight:500;">
-            Temporary Password: <strong style="background-color:#e2e8f0;padding:2px 6px;border-radius:4px;letter-spacing:1px;">${tempPassword}</strong>
+            Temporary Password:
           </p>
+          <div style="background-color:#ffffff;border:1px dashed #94a3b8;border-radius:6px;padding:16px;text-align:center;margin-bottom:20px;">
+            <code style="font-family:monospace;font-size:20px;color:#0f172a;letter-spacing:3px;background:none;padding:0;user-select:all;">${tempPassword}</code>
+          </div>
           <div style="width:32px;height:1px;background-color:#006464;margin-bottom:16px;"></div>
           <p style="margin:0;color:#334155;font-size:12px;line-height:1.7;font-weight:300;">
             For your security, you will be required to change this password when you first log in.
