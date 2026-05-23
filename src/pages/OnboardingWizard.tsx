@@ -114,7 +114,7 @@ const OnboardingWizard: React.FC = () => {
                     ndaSigned: true,
                     ndaSignedAt: new Date()
                 });
-                navigate('/dashboard');
+                window.location.href = '/dashboard';
             }
         } catch (error) {
             console.error("Error saving onboarding:", error);
