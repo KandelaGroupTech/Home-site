@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { db } from '../lib/firebase';
-import { collection, getDocs } from 'firebase/firestore';
+import { db, firebaseConfig } from '../lib/firebase';
+import { collection, getDocs, doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { initializeApp } from 'firebase/app';
+import { getAuth, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'firebase/auth';
 import { UserProfile } from '../types';
-import { Search, Download, Filter } from 'lucide-react';
+import { Search, Download, Filter, UserPlus, X } from 'lucide-react';
 
 const AdminDirectory: React.FC = () => {
     const [users, setUsers] = useState<UserProfile[]>([]);
@@ -16,13 +18,23 @@ const AdminDirectory: React.FC = () => {
     const [filterOpenToDeals, setFilterOpenToDeals] = useState('All');
     const [showFilters, setShowFilters] = useState(false);
 
+    // Add User Modal State
+    const [showAddModal, setShowAddModal] = useState(false);
+    const [addEmail, setAddEmail] = useState('');
+    const [addFirstName, setAddFirstName] = useState('');
+    const [addLastName, setAddLastName] = useState('');
+    const [addLoading, setAddLoading] = useState(false);
+    const [addError, setAddError] = useState('');
+    const [addSuccess, setAddSuccess] = useState(false);
+
+    const fetchUsers = async () => {
+        try {
+            const snap = await getDocs(collection(db, 'users'));
+            setUsers(snap.docs.map(d => ({ uid: d.id, ...d.data() } as UserProfile)).filter(u => u.role !== 'admin'));
+        } catch (e) { console.error(e); } finally { setLoading(false); }
+    };
+
     useEffect(() => {
-        const fetchUsers = async () => {
-            try {
-                const snap = await getDocs(collection(db, 'users'));
-                setUsers(snap.docs.map(d => ({ uid: d.id, ...d.data() } as UserProfile)).filter(u => u.role !== 'admin'));
-            } catch (e) { console.error(e); } finally { setLoading(false); }
-        };
         fetchUsers();
     }, []);
 
@@ -64,6 +76,62 @@ const AdminDirectory: React.FC = () => {
         document.body.removeChild(link);
     };
 
+    const handleAddUser = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setAddLoading(true);
+        setAddError('');
+        
+        try {
+            // 1. Initialize Secondary App
+            const secondaryApp = initializeApp(firebaseConfig, 'SecondaryApp' + Date.now());
+            const secondaryAuth = getAuth(secondaryApp);
+            
+            // 2. Generate random temporary password
+            const tempPassword = Math.random().toString(36).slice(-12) + 'aA1!';
+            
+            // 3. Create User in secondary auth (prevents admin logout)
+            const userCredential = await createUserWithEmailAndPassword(secondaryAuth, addEmail, tempPassword);
+            const newUid = userCredential.user.uid;
+            
+            // 4. Create Firestore Document
+            await setDoc(doc(db, 'users', newUid), {
+                uid: newUid,
+                email: addEmail,
+                firstName: addFirstName,
+                lastName: addLastName,
+                role: 'investor',
+                phone: '',
+                company: '',
+                address: { line1: '', line2: '', city: '', state: '', zipCode: '', country: '' },
+                preferences: { openToNewDeals: false, accreditedStatus: '', checkSize: '' },
+                onboardingCompleted: false,
+                updatedAt: serverTimestamp()
+            });
+
+            // 5. Send Password Reset Email using the primary auth (or secondary, doesn't matter)
+            await sendPasswordResetEmail(secondaryAuth, addEmail);
+            
+            // 6. Sign out of secondary and clean up
+            await signOut(secondaryAuth);
+            
+            setAddSuccess(true);
+            setTimeout(() => {
+                setAddSuccess(false);
+                setShowAddModal(false);
+                setAddEmail('');
+                setAddFirstName('');
+                setAddLastName('');
+                fetchUsers(); // Refresh list
+            }, 2000);
+
+        } catch (err: any) {
+            console.error('Error adding user:', err);
+            setAddError(err.message || 'Failed to create user. Ensure the email is not already in use.');
+        } finally {
+            setAddLoading(false);
+        }
+    };
+
     if (loading) return <div className="h-64 bg-teal-50 rounded-2xl animate-pulse" />;
 
     return (
@@ -82,6 +150,12 @@ const AdminDirectory: React.FC = () => {
                         className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all text-sm font-medium ${showFilters ? 'bg-teal-50 border-teal-200 text-teal-700' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
                     >
                         <Filter size={16} /> Filters
+                    </button>
+                    <button 
+                        onClick={() => setShowAddModal(true)}
+                        className="flex items-center gap-2 px-4 py-2 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-700 border border-teal-200 transition-all text-sm font-medium shadow-sm"
+                    >
+                        <UserPlus size={16} /> Add Investor
                     </button>
                     <button 
                         onClick={exportToCSV}
@@ -205,6 +279,75 @@ const AdminDirectory: React.FC = () => {
                     </div>
                 )}
             </div>
+
+            {/* Add User Modal */}
+            {showAddModal && (
+                <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-fade-in">
+                        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                            <h3 className="font-serif text-lg text-slate-800">Add New Investor</h3>
+                            <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
+                                <X size={20} />
+                            </button>
+                        </div>
+                        
+                        <div className="p-6">
+                            {addSuccess ? (
+                                <div className="text-center py-6">
+                                    <div className="w-12 h-12 bg-teal-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-teal-100">
+                                        <div className="w-6 h-6 border-2 border-teal-600 rounded-full flex items-center justify-center">
+                                            <div className="w-2 h-2 bg-teal-600 rounded-full"></div>
+                                        </div>
+                                    </div>
+                                    <h4 className="text-lg font-medium text-slate-800 mb-2">Investor Added!</h4>
+                                    <p className="text-slate-500 text-sm">Account created and a password reset link has been emailed to them.</p>
+                                </div>
+                            ) : (
+                                <form onSubmit={handleAddUser} className="space-y-4">
+                                    {addError && (
+                                        <div className="p-3 bg-red-50 border border-red-100 text-red-600 rounded-lg text-sm">
+                                            {addError}
+                                        </div>
+                                    )}
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1.5">First Name</label>
+                                            <input 
+                                                type="text" required value={addFirstName} onChange={e => setAddFirstName(e.target.value)}
+                                                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 outline-none"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1.5">Last Name</label>
+                                            <input 
+                                                type="text" required value={addLastName} onChange={e => setAddLastName(e.target.value)}
+                                                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 outline-none"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1.5">Email Address</label>
+                                        <input 
+                                            type="email" required value={addEmail} onChange={e => setAddEmail(e.target.value)}
+                                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 outline-none"
+                                        />
+                                    </div>
+                                    <div className="pt-2">
+                                        <button 
+                                            type="submit" disabled={addLoading}
+                                            className="w-full bg-teal-700 hover:bg-teal-600 disabled:opacity-50 text-white font-medium py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2"
+                                        >
+                                            {addLoading ? (
+                                                <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Creating...</>
+                                            ) : 'Create & Send Invite'}
+                                        </button>
+                                    </div>
+                                </form>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

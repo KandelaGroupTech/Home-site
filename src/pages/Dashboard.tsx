@@ -36,6 +36,12 @@ const Dashboard: React.FC = () => {
 
     const role = profile?.role || 'investor';
 
+    // Trap new investors in the onboarding wizard
+    if (role === 'investor' && profile && !profile.onboardingCompleted) {
+        window.location.href = '/onboarding';
+        return null;
+    }
+
     if (role === 'admin' && ['welcome', 'documents', 'tax-documents', 'faq', 'contact', 'profile'].includes(activeTab)) {
         setActiveTab('overview');
     } else if (role === 'investor' && ['overview', 'upload', 'manage-documents', 'announcements', 'directory'].includes(activeTab)) {
