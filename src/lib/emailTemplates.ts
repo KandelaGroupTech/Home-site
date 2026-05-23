@@ -192,3 +192,53 @@ export function buildAnnouncementEmail(announcementTitle: string, announcementCo
 
   return emailWrapper(body);
 }
+
+/**
+ * Generates a branded email to welcome a new user and provide their temporary password.
+ */
+export function buildWelcomeEmail(email: string, tempPassword: string, recipientFirstName?: string): string {
+  const greeting = recipientFirstName ? `Dear ${recipientFirstName},` : 'Dear Investor,';
+
+  const body = `
+    <p style="margin:0 0 20px;color:#334155;font-size:14px;line-height:1.7;font-weight:300;">
+      ${greeting}
+    </p>
+    <p style="margin:0 0 24px;color:#334155;font-size:14px;line-height:1.7;font-weight:300;">
+      Welcome to <strong>The Kandela Group</strong> platform. An investor account has been created for you.
+    </p>
+
+    <!-- Credentials Card -->
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+      <tr>
+        <td style="background-color:#f0fdfa;border:1px solid #ccfbf1;border-left:4px solid #006464;border-radius:8px;padding:24px;">
+          <p style="margin:0 0 4px;color:#94a3b8;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;">
+            Your Login Credentials
+          </p>
+          <p style="margin:0 0 8px;color:#0f172a;font-size:14px;font-weight:500;">
+            Email: <span style="font-weight:300;">${email}</span>
+          </p>
+          <p style="margin:0 0 16px;color:#0f172a;font-size:14px;font-weight:500;">
+            Temporary Password: <strong style="background-color:#e2e8f0;padding:2px 6px;border-radius:4px;letter-spacing:1px;">${tempPassword}</strong>
+          </p>
+          <div style="width:32px;height:1px;background-color:#006464;margin-bottom:16px;"></div>
+          <p style="margin:0;color:#334155;font-size:12px;line-height:1.7;font-weight:300;">
+            For your security, you will be required to change this password when you first log in.
+          </p>
+        </td>
+      </tr>
+    </table>
+
+    <!-- CTA Button -->
+    <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto 12px;">
+      <tr>
+        <td style="background-color:#006464;border-radius:8px;">
+          <a href="${PLATFORM_URL}/login" target="_blank" style="display:inline-block;padding:14px 36px;color:#ffffff;font-size:13px;font-weight:600;text-decoration:none;letter-spacing:0.5px;">
+            Log in to Portal &rarr;
+          </a>
+        </td>
+      </tr>
+    </table>
+  `;
+
+  return emailWrapper(body);
+}

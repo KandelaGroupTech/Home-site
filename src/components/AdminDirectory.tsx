@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { db, firebaseConfig } from '../lib/firebase';
-import { collection, getDocs, doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, getDocs, doc, setDoc, serverTimestamp, deleteDoc, addDoc } from 'firebase/firestore';
 import { initializeApp } from 'firebase/app';
-import { getAuth, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'firebase/auth';
+import { getAuth, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
 import { UserProfile } from '../types';
-import { Search, Download, Filter, UserPlus, X } from 'lucide-react';
+import { Search, Download, Filter, UserPlus, X, Trash2 } from 'lucide-react';
+import { buildWelcomeEmail } from '../lib/emailTemplates';
 
 const AdminDirectory: React.FC = () => {
     const [users, setUsers] = useState<UserProfile[]>([]);
@@ -51,6 +52,17 @@ const AdminDirectory: React.FC = () => {
 
         return matchSearch && matchCompany && matchAccredited && matchCheckSize && matchDeals;
     });
+
+    const handleDeleteUser = async (uid: string, name: string) => {
+        if (!window.confirm(`Are you sure you want to completely remove ${name} from the platform? They will lose all access.`)) return;
+        try {
+            await deleteDoc(doc(db, 'users', uid));
+            fetchUsers(); // Refresh list
+        } catch (err) {
+            console.error('Error deleting user:', err);
+            alert('Failed to delete user.');
+        }
+    };
 
     const exportToCSV = () => {
         if (filtered.length === 0) return;
@@ -108,8 +120,16 @@ const AdminDirectory: React.FC = () => {
                 updatedAt: serverTimestamp()
             });
 
-            // 5. Send Password Reset Email using the primary auth (or secondary, doesn't matter)
-            await sendPasswordResetEmail(secondaryAuth, addEmail);
+            // 5. Send Welcome Email via mail collection
+            const emailHtml = buildWelcomeEmail(addEmail, tempPassword, addFirstName);
+            await addDoc(collection(db, 'mail'), {
+                to: addEmail,
+                message: {
+                    subject: 'Welcome to The Kandela Group',
+                    html: emailHtml
+                },
+                createdAt: serverTimestamp()
+            });
             
             // 6. Sign out of secondary and clean up
             await signOut(secondaryAuth);
@@ -226,12 +246,13 @@ const AdminDirectory: React.FC = () => {
                                 <th className="px-5 py-4">Accredited</th>
                                 <th className="px-5 py-4">Check Size</th>
                                 <th className="px-5 py-4">Open to Deals</th>
+                                <th className="px-5 py-4 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
                             {filtered.length === 0 ? (
                                 <tr>
-                                    <td colSpan={7} className="py-12 text-center text-slate-400 font-light text-sm">
+                                    <td colSpan={8} className="py-12 text-center text-slate-400 font-light text-sm">
                                         No investors match your current filters.
                                     </td>
                                 </tr>
@@ -267,6 +288,15 @@ const AdminDirectory: React.FC = () => {
                                             <span className={`w-2 h-2 rounded-full ${user.preferences?.openToNewDeals ? 'bg-teal-500' : 'bg-slate-300'}`} />
                                             {user.preferences?.openToNewDeals ? 'Yes' : 'No'}
                                         </span>
+                                    </td>
+                                    <td className="px-5 py-4 text-right">
+                                        <button 
+                                            onClick={() => handleDeleteUser(user.uid, `${user.firstName} ${user.lastName}`)}
+                                            className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors inline-flex"
+                                            title="Remove Investor"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
                                     </td>
                                 </tr>
                             ))}
@@ -314,14 +344,14 @@ const AdminDirectory: React.FC = () => {
                                             <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1.5">First Name</label>
                                             <input 
                                                 type="text" required value={addFirstName} onChange={e => setAddFirstName(e.target.value)}
-                                                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 outline-none"
+                                                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-900 bg-white focus:border-teal-500 focus:ring-1 focus:ring-teal-500 outline-none"
                                             />
                                         </div>
                                         <div>
                                             <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1.5">Last Name</label>
                                             <input 
                                                 type="text" required value={addLastName} onChange={e => setAddLastName(e.target.value)}
-                                                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 outline-none"
+                                                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-900 bg-white focus:border-teal-500 focus:ring-1 focus:ring-teal-500 outline-none"
                                             />
                                         </div>
                                     </div>
@@ -329,7 +359,7 @@ const AdminDirectory: React.FC = () => {
                                         <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1.5">Email Address</label>
                                         <input 
                                             type="email" required value={addEmail} onChange={e => setAddEmail(e.target.value)}
-                                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 outline-none"
+                                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-900 bg-white focus:border-teal-500 focus:ring-1 focus:ring-teal-500 outline-none"
                                         />
                                     </div>
                                     <div className="pt-2">
