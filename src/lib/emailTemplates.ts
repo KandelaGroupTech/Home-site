@@ -4,7 +4,7 @@
  * consistent, professional notification emails.
  */
 
-const PLATFORM_URL = 'https://www.thekandelagroup.com';
+const PLATFORM_URL = 'https://thekandelagroup.com';
 
 const emailWrapper = (bodyContent: string) => `
 <!DOCTYPE html>
