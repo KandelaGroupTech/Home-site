@@ -87,7 +87,7 @@ const LandingPage: React.FC = () => {
                             href="/login"
                             className="text-xs font-light tracking-widest text-slate-500 hover:text-white transition-colors"
                         >
-                            CLIENT LOGIN
+                            INVESTOR LOGIN
                         </a>
                         <a
                             href="#"

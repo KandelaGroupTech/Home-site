@@ -28,7 +28,7 @@ const LoginPage: React.FC = () => {
     return (
         <div className="min-h-screen w-full bg-slate-950 flex items-center justify-center p-4">
             <div className="w-full max-w-md bg-slate-900/50 border border-white/10 p-8 rounded-lg backdrop-blur-sm">
-                <h1 className="text-2xl font-serif text-white mb-6 text-center">Client Portal</h1>
+                <h1 className="text-2xl font-serif text-white mb-6 text-center">Investor Login</h1>
 
                 {error && (
                     <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded mb-4 text-sm">
