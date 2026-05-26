@@ -26,7 +26,7 @@ const InvestorSecureDrop: React.FC<Props> = ({ userUid, profile }) => {
     };
 
     const handleUpload = async () => {
-        if (!file || !profile) return;
+        if (!file) return;
         setUploading(true);
         setError('');
         setSuccess(false);
@@ -37,10 +37,14 @@ const InvestorSecureDrop: React.FC<Props> = ({ userUid, profile }) => {
             const snapshot = await uploadBytes(fileRef, file);
             const downloadUrl = await getDownloadURL(snapshot.ref);
 
+            const investorName = profile 
+                ? `${profile.firstName || ''} ${profile.lastName || ''}`.trim() 
+                : 'Investor';
+
             // Create record in Firestore
             await addDoc(collection(db, 'investor_uploads'), {
                 investor_uid: userUid,
-                investor_name: `${profile.firstName} ${profile.lastName}`,
+                investor_name: investorName || 'Investor',
                 file_name: file.name,
                 file_url: downloadUrl,
                 note: note.trim() || null,
