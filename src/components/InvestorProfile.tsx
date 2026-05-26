@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { db } from '../lib/firebase';
+import { db, auth } from '../lib/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { UserProfile } from '../types';
-import { Save, Check } from 'lucide-react';
+import { Save, Check, Key, ShieldAlert } from 'lucide-react';
+import { sendPasswordResetEmail } from 'firebase/auth';
 import 'react-phone-number-input/style.css';
 import PhoneInput from 'react-phone-number-input';
 import Autocomplete from 'react-google-autocomplete';
@@ -23,7 +24,28 @@ const InvestorProfile: React.FC<Props> = ({ userUid, initialProfile }) => {
     });
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
+    const [resetLoading, setResetLoading] = useState(false);
+    const [resetSent, setResetSent] = useState(false);
+    const [resetError, setResetError] = useState<string | null>(null);
     const autocompleteRef = useRef<any>(null);
+
+    const handlePasswordReset = async () => {
+        if (!profile.email) return;
+        setResetLoading(true);
+        setResetError(null);
+        setResetSent(false);
+
+        try {
+            await sendPasswordResetEmail(auth, profile.email);
+            setResetSent(true);
+            setTimeout(() => setResetSent(false), 5000);
+        } catch (err: any) {
+            console.error('Password reset request failed', err);
+            setResetError(err.message || 'Failed to send password reset email. Please try again.');
+        } finally {
+            setResetLoading(false);
+        }
+    };
 
     useEffect(() => {
         if (initialProfile) {
@@ -221,6 +243,38 @@ const InvestorProfile: React.FC<Props> = ({ userUid, initialProfile }) => {
                             </div>
                         </div>
                     </div>
+                </div>
+                {/* Security Card */}
+                <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                    <SectionTitle>Security & Password</SectionTitle>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <p className="text-slate-700 font-medium text-sm">Reset Password</p>
+                            <p className="text-slate-400 text-xs font-light mt-0.5">We will send a secure password reset link to your registered email address ({profile.email})</p>
+                        </div>
+                        <button
+                            type="button"
+                            disabled={resetLoading}
+                            onClick={handlePasswordReset}
+                            className={`flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all shrink-0 shadow-sm border ${
+                                resetSent
+                                    ? 'bg-green-50 text-green-700 border-green-300'
+                                    : 'bg-slate-900 hover:bg-slate-800 text-white border-slate-900'
+                            }`}
+                        >
+                            {resetSent ? (
+                                <><Check size={16} /> Link Sent!</>
+                            ) : (
+                                <><Key size={16} /> {resetLoading ? 'Sending...' : 'Request Reset Link'}</>
+                            )}
+                        </button>
+                    </div>
+                    {resetError && (
+                        <div className="mt-4 p-3 bg-red-50 text-red-600 border border-red-100 rounded-lg text-xs font-medium flex items-center gap-2 animate-in fade-in">
+                            <ShieldAlert size={16} className="shrink-0" />
+                            {resetError}
+                        </div>
+                    )}
                 </div>
 
                 {/* Save */}
