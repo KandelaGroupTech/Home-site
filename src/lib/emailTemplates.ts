@@ -129,15 +129,17 @@ export function buildDocumentUploadEmail(docTitle: string, recipientFirstName?: 
     </p>
 
     <!-- CTA Button -->
-    <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto 12px;">
-      <tr>
-        <td style="background-color:#006464;border-radius:8px;">
-          <a href="${PLATFORM_URL}" target="_blank" style="display:inline-block;padding:14px 36px;color:#ffffff;font-size:13px;font-weight:600;text-decoration:none;letter-spacing:0.5px;">
-            View on Kandela Portal &rarr;
-          </a>
-        </td>
-      </tr>
-    </table>
+    <div style="text-align:center;margin:32px 0 12px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;">
+        <tr>
+          <td style="background-color:#006464;border-radius:50px;box-shadow:0 4px 12px rgba(0,100,100,0.3);">
+            <a href="${PLATFORM_URL}" target="_blank" style="display:inline-block;padding:16px 42px;color:#ffffff;font-size:14px;font-weight:bold;text-decoration:none;letter-spacing:1px;text-transform:uppercase;">
+              View on Kandela Portal
+            </a>
+          </td>
+        </tr>
+      </table>
+    </div>
   `;
 
   return emailWrapper(body);
@@ -146,7 +148,7 @@ export function buildDocumentUploadEmail(docTitle: string, recipientFirstName?: 
 /**
  * Generates a branded email for a new announcement notification.
  */
-export function buildAnnouncementEmail(announcementTitle: string, announcementContent: string, authorName: string, recipientFirstName?: string): string {
+export function buildAnnouncementEmail(announcementTitle: string, announcementContent: string, authorName: string, recipientFirstName?: string, attachments?: {name: string; url: string}[]): string {
   const greeting = recipientFirstName ? `Dear ${recipientFirstName},` : 'Dear Investor,';
 
   // Convert newlines to <br> for the announcement content
@@ -178,16 +180,38 @@ export function buildAnnouncementEmail(announcementTitle: string, announcementCo
       </tr>
     </table>
 
-    <!-- CTA Button -->
-    <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto 12px;">
+    ${attachments && attachments.length > 0 ? `
+    <!-- Attachments Card -->
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
       <tr>
-        <td style="background-color:#006464;border-radius:8px;">
-          <a href="${PLATFORM_URL}" target="_blank" style="display:inline-block;padding:14px 36px;color:#ffffff;font-size:13px;font-weight:600;text-decoration:none;letter-spacing:0.5px;">
-            View on Kandela Portal &rarr;
-          </a>
+        <td style="background-color:#f8fafc;border:1px solid #e2e8f0;border-left:4px solid #64748b;border-radius:8px;padding:20px 24px;">
+          <p style="margin:0 0 12px;color:#64748b;font-size:11px;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;">
+            Attached Documents
+          </p>
+          <ul style="margin:0;padding:0 0 0 16px;color:#334155;font-size:14px;line-height:1.7;">
+            ${attachments.map(att => `
+              <li style="margin-bottom:8px;">
+                <a href="${att.url}" target="_blank" style="color:#006464;text-decoration:none;font-weight:500;">${att.name}</a>
+              </li>
+            `).join('')}
+          </ul>
         </td>
       </tr>
     </table>
+    ` : ''}
+
+    <!-- CTA Button -->
+    <div style="text-align:center;margin:32px 0 12px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;">
+        <tr>
+          <td style="background-color:#006464;border-radius:50px;box-shadow:0 4px 12px rgba(0,100,100,0.3);">
+            <a href="${PLATFORM_URL}" target="_blank" style="display:inline-block;padding:16px 42px;color:#ffffff;font-size:14px;font-weight:bold;text-decoration:none;letter-spacing:1px;text-transform:uppercase;">
+              View on Kandela Portal
+            </a>
+          </td>
+        </tr>
+      </table>
+    </div>
   `;
 
   return emailWrapper(body);
@@ -208,39 +232,49 @@ export function buildWelcomeEmail(email: string, tempPassword: string, recipient
     </p>
 
     <!-- Credentials Card -->
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:12px;">
       <tr>
-        <td style="background-color:#f0fdfa;border:1px solid #ccfbf1;border-left:4px solid #006464;border-radius:8px;padding:24px;">
+        <td style="background-color:#f0fdfa;border:1px solid #ccfbf1;border-left:4px solid #006464;border-radius:8px;padding:20px 24px;">
           <p style="margin:0 0 4px;color:#94a3b8;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;">
-            Your Login Credentials
+            Your Login Email
           </p>
-          <p style="margin:0 0 8px;color:#0f172a;font-size:14px;font-weight:500;">
-            Email: <span style="font-weight:300;">${email}</span>
-          </p>
-          <p style="margin:0 0 16px;color:#0f172a;font-size:14px;font-weight:500;">
-            Temporary Password:
-          </p>
-          <div style="text-align:center;margin-bottom:20px;">
-            <div style="display:inline-block;background-color:#e2e8f0;border-radius:4px;padding:8px 12px;font-family:monospace;font-size:18px;color:#0f172a;user-select:all;letter-spacing:0;">${tempPassword}</div>
-          </div>
-          <div style="width:32px;height:1px;background-color:#006464;margin-bottom:16px;"></div>
-          <p style="margin:0;color:#334155;font-size:12px;line-height:1.7;font-weight:300;">
-            For your security, you will be required to change this password when you first log in.
+          <p style="margin:0;color:#0f172a;font-size:15px;font-weight:500;">
+            ${email}
           </p>
         </td>
       </tr>
     </table>
 
-    <!-- CTA Button -->
-    <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto 12px;">
+    <!-- Password Block (separate card for easy copying) -->
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
       <tr>
-        <td style="background-color:#006464;border-radius:8px;">
-          <a href="${PLATFORM_URL}/login" target="_blank" style="display:inline-block;padding:14px 36px;color:#ffffff;font-size:13px;font-weight:600;text-decoration:none;letter-spacing:0.5px;">
-            Log in to Portal &rarr;
-          </a>
+        <td style="background-color:#ffffff;border:2px solid #006464;border-radius:8px;padding:24px;text-align:center;">
+          <p style="margin:0 0 12px;color:#94a3b8;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;">
+            Your Temporary Password
+          </p>
+          <p style="margin:0 0 12px;font-family:'Courier New',Courier,monospace;font-size:26px;font-weight:bold;color:#006464;letter-spacing:3px;word-spacing:0;line-height:1;">
+            ${tempPassword}
+          </p>
+          <p style="margin:0;color:#64748b;font-size:11px;font-weight:300;line-height:1.5;">
+            Copy the password above exactly as shown.<br>You will be asked to change it on first login.
+          </p>
         </td>
       </tr>
     </table>
+
+
+    <!-- CTA Button -->
+    <div style="text-align:center;margin:32px 0 12px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;">
+        <tr>
+          <td style="background-color:#006464;border-radius:50px;box-shadow:0 4px 12px rgba(0,100,100,0.3);">
+            <a href="${PLATFORM_URL}/login" target="_blank" style="display:inline-block;padding:16px 42px;color:#ffffff;font-size:14px;font-weight:bold;text-decoration:none;letter-spacing:1px;text-transform:uppercase;">
+              Log in to Portal
+            </a>
+          </td>
+        </tr>
+      </table>
+    </div>
   `;
 
   return emailWrapper(body);

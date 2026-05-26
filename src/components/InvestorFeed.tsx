@@ -3,7 +3,7 @@ import { db } from '../lib/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { Announcement } from '../types';
-import { Mail, Calendar, ChevronDown, ChevronUp } from 'lucide-react';
+import { Mail, Calendar, ChevronDown, ChevronUp, Paperclip, Download } from 'lucide-react';
 
 const InvestorFeed: React.FC = () => {
     const [announcements, setAnnouncements] = useState<Announcement[]>([]);
@@ -115,6 +115,36 @@ const InvestorFeed: React.FC = () => {
                                         <div className="border-t border-slate-100 pt-4">
                                             <p className="text-slate-600 font-light leading-relaxed whitespace-pre-wrap text-sm">{ann.content}</p>
                                         </div>
+                                        
+                                        {ann.attachments && ann.attachments.length > 0 && (
+                                            <div className="mt-6 border-t border-slate-100 pt-4">
+                                                <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                                    <Paperclip size={14} /> Attached Documents
+                                                </h4>
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                    {ann.attachments.map((att, idx) => (
+                                                        <a 
+                                                            key={idx} 
+                                                            href={att.url} 
+                                                            target="_blank" 
+                                                            rel="noopener noreferrer"
+                                                            className="flex items-center justify-between p-3 rounded-lg border border-slate-200 bg-slate-50 hover:bg-teal-50 hover:border-teal-200 transition-colors group"
+                                                        >
+                                                            <div className="flex items-center gap-3 overflow-hidden">
+                                                                <div className="w-8 h-8 rounded bg-white border border-slate-200 flex items-center justify-center flex-shrink-0 text-slate-400 group-hover:text-teal-600 transition-colors">
+                                                                    <Paperclip size={14} />
+                                                                </div>
+                                                                <div className="truncate">
+                                                                    <p className="text-sm font-medium text-slate-700 truncate">{att.name}</p>
+                                                                    <p className="text-xs text-slate-400">{Math.round(att.size / 1024)} KB</p>
+                                                                </div>
+                                                            </div>
+                                                            <Download size={16} className="text-slate-400 group-hover:text-teal-600 transition-colors flex-shrink-0 ml-2" />
+                                                        </a>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>

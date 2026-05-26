@@ -44,8 +44,24 @@ export interface PlatformDocument {
     file_url: string;
     target_audience: 'all' | 'specific_users';
     allowed_uids: string[];
-    read_by?: string[]; // array of UIDs who have viewed the document
+    read_by?: Record<string, string>; // map of UID to ISO date string
     created_at: any; // Firestore Timestamp
+}
+
+export interface InvestorUpload {
+    id: string;
+    investor_uid: string;
+    investor_name: string;
+    file_name: string;
+    file_url: string;
+    created_at: any; // Firestore Timestamp
+}
+
+export interface Attachment {
+    name: string;
+    url: string;
+    size: number;
+    type: string;
 }
 
 export interface Announcement {
@@ -54,4 +70,7 @@ export interface Announcement {
     content: string; // Could be HTML or rich text
     author_name: string;
     created_at: any; // Firestore Timestamp
+    target_audience?: 'all' | 'custom';
+    allowed_uids?: string[];
+    attachments?: Attachment[];
 }

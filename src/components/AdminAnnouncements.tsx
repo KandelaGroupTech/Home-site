@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { db } from '../lib/firebase';
+import React, { useState, useEffect, useRef } from 'react';
+import { db, storage } from '../lib/firebase';
 import { collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, getDocs, updateDoc, writeBatch } from 'firebase/firestore';
-import { Send, Check, Trash2, Megaphone, Users } from 'lucide-react';
-import { UserProfile } from '../types';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { Send, Check, Trash2, Megaphone, Users, Paperclip, X, FileText } from 'lucide-react';
+import { UserProfile, Attachment } from '../types';
 import { buildAnnouncementEmail } from '../lib/emailTemplates';
 
 interface Props { authorName: string; }
@@ -15,6 +16,8 @@ const AdminAnnouncements: React.FC<Props> = ({ authorName }) => {
     const [sending, setSending] = useState(false);
     const [sent, setSent] = useState(false);
     const [announcements, setAnnouncements] = useState<any[]>([]);
+    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     
     // Targeting State
     const [targetType, setTargetType] = useState('all'); // 'all', 'category', 'individuals'
@@ -89,6 +92,16 @@ const AdminAnnouncements: React.FC<Props> = ({ authorName }) => {
         }
     };
 
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files) {
+            setSelectedFiles(prev => [...prev, ...Array.from(e.target.files!)]);
+        }
+    };
+
+    const removeFile = (indexToRemove: number) => {
+        setSelectedFiles(prev => prev.filter((_, index) => index !== indexToRemove));
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
@@ -119,10 +132,24 @@ const AdminAnnouncements: React.FC<Props> = ({ authorName }) => {
 
         setSending(true);
         try {
+            const attachments: Attachment[] = [];
+            for (const file of selectedFiles) {
+                const fileRef = ref(storage, `announcement_attachments/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`);
+                await uploadBytes(fileRef, file);
+                const url = await getDownloadURL(fileRef);
+                attachments.push({
+                    name: file.name,
+                    url,
+                    size: file.size,
+                    type: file.type
+                });
+            }
+
             await addDoc(collection(db, 'announcements'), {
                 title, content, author_name: authorName, created_at: new Date(),
                 target_audience,
-                allowed_uids
+                allowed_uids,
+                attachments
             });
 
             // Trigger Emails via Firebase Extension
@@ -134,7 +161,7 @@ const AdminAnnouncements: React.FC<Props> = ({ authorName }) => {
                         to: u.email,
                         message: {
                             subject: `New Announcement: ${title}`,
-                            html: buildAnnouncementEmail(title, content, authorName, u.firstName)
+                            html: buildAnnouncementEmail(title, content, authorName, u.firstName, attachments)
                         }
                     });
                 });
@@ -145,6 +172,8 @@ const AdminAnnouncements: React.FC<Props> = ({ authorName }) => {
             setTitle(''); 
             setContent('');
             setSelectedUids([]);
+            setSelectedFiles([]);
+            if (fileInputRef.current) fileInputRef.current.value = '';
             setTimeout(() => setSent(false), 3000);
         } catch (e) { console.error(e); } finally { setSending(false); }
     };
@@ -261,6 +290,41 @@ const AdminAnnouncements: React.FC<Props> = ({ authorName }) => {
                             rows={8} className={fieldClass + ' resize-none'}
                             placeholder="Write your message here..."
                         />
+                    </div>
+                    <div>
+                        <input
+                            type="file"
+                            multiple
+                            ref={fileInputRef}
+                            onChange={handleFileChange}
+                            className="hidden"
+                        />
+                        <button
+                            type="button"
+                            onClick={() => fileInputRef.current?.click()}
+                            className="flex items-center gap-2 text-sm text-teal-600 font-medium hover:text-teal-700 transition-colors"
+                        >
+                            <Paperclip size={16} /> Attach Documents
+                        </button>
+                        
+                        {selectedFiles.length > 0 && (
+                            <div className="mt-3 flex flex-wrap gap-2">
+                                {selectedFiles.map((file, idx) => (
+                                    <div key={idx} className="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-sm">
+                                        <FileText size={14} className="text-slate-400" />
+                                        <span className="text-slate-700 max-w-[200px] truncate">{file.name}</span>
+                                        <span className="text-xs text-slate-400">({Math.round(file.size / 1024)} KB)</span>
+                                        <button
+                                            type="button"
+                                            onClick={() => removeFile(idx)}
+                                            className="ml-1 text-slate-400 hover:text-red-500 focus:outline-none"
+                                        >
+                                            <X size={14} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
 

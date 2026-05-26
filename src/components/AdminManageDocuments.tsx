@@ -3,29 +3,40 @@ import { db, storage } from '../lib/firebase';
 import { collection, query, orderBy, getDocs, deleteDoc, doc } from 'firebase/firestore';
 import { ref, deleteObject } from 'firebase/storage';
 import { PlatformDocument } from '../types';
-import { Trash2, FileText, Search } from 'lucide-react';
+import { Trash2, FileText, Search, Eye, X } from 'lucide-react';
 
 const AdminManageDocuments: React.FC = () => {
     const [documents, setDocuments] = useState<PlatformDocument[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+    const [usersMap, setUsersMap] = useState<Record<string, any>>({});
+    const [viewingReceipts, setViewingReceipts] = useState<PlatformDocument | null>(null);
 
-    const fetchDocs = async () => {
+    const fetchData = async () => {
         setLoading(true);
         try {
-            const q = query(collection(db, 'documents'), orderBy('created_at', 'desc'));
-            const snapshot = await getDocs(q);
-            const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() })) as PlatformDocument[];
+            const [docsSnap, usersSnap] = await Promise.all([
+                getDocs(query(collection(db, 'documents'), orderBy('created_at', 'desc'))),
+                getDocs(collection(db, 'users'))
+            ]);
+            
+            const data = docsSnap.docs.map(d => ({ id: d.id, ...d.data() })) as PlatformDocument[];
             setDocuments(data);
+            
+            const umap: Record<string, any> = {};
+            usersSnap.docs.forEach(d => {
+                umap[d.id] = d.data();
+            });
+            setUsersMap(umap);
         } catch (error) {
-            console.error("Error fetching documents:", error);
+            console.error("Error fetching data:", error);
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchDocs();
+        fetchData();
     }, []);
 
     const handleDelete = async (documentId: string, fileUrl: string) => {
@@ -145,6 +156,13 @@ const AdminManageDocuments: React.FC = () => {
                                             </td>
                                             <td className="p-4 text-right">
                                                 <button 
+                                                    onClick={() => setViewingReceipts(doc)}
+                                                    className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors inline-flex items-center justify-center mr-1"
+                                                    title="View Read Receipts"
+                                                >
+                                                    <Eye size={16} />
+                                                </button>
+                                                <button 
                                                     onClick={() => handleDelete(doc.id, doc.file_url)}
                                                     className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors inline-flex items-center justify-center"
                                                     title="Delete Document"
@@ -160,6 +178,53 @@ const AdminManageDocuments: React.FC = () => {
                     </table>
                 </div>
             </div>
+
+            {viewingReceipts && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[80vh]">
+                        <div className="flex justify-between items-center p-5 border-b border-slate-200">
+                            <div>
+                                <h3 className="text-lg font-serif text-slate-800">Read Receipts</h3>
+                                <p className="text-xs text-slate-500 line-clamp-1">{viewingReceipts.title}</p>
+                            </div>
+                            <button onClick={() => setViewingReceipts(null)} className="text-slate-400 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 p-2 rounded-full transition-colors">
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <div className="p-5 overflow-y-auto flex-1">
+                            {(!viewingReceipts.read_by || Object.keys(viewingReceipts.read_by).length === 0) ? (
+                                <div className="text-center py-8">
+                                    <Eye size={32} className="mx-auto text-slate-300 mb-3" />
+                                    <p className="text-slate-500 font-medium">No views yet</p>
+                                    <p className="text-xs text-slate-400 mt-1">Investors haven't opened this document.</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-3">
+                                    {Object.entries(viewingReceipts.read_by).sort(([, dateA], [, dateB]) => new Date(dateB as string).getTime() - new Date(dateA as string).getTime()).map(([uid, isoDate]) => {
+                                        const user = usersMap[uid];
+                                        const name = user ? `${user.firstName} ${user.lastName}` : 'Unknown User';
+                                        const email = user ? user.email : uid;
+                                        const date = new Date(isoDate as string);
+                                        
+                                        return (
+                                            <div key={uid} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                                <div>
+                                                    <p className="text-sm font-medium text-slate-800">{name}</p>
+                                                    <p className="text-xs text-slate-500">{email}</p>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className="text-xs font-medium text-slate-700">{date.toLocaleDateString()}</p>
+                                                    <p className="text-[10px] text-slate-400">{date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -50,16 +50,17 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({ documents, loading, pag
         displayedDocs = localDocs.filter(d => currentCat.types.includes(d.type));
     }
     if (showUnreadOnly) {
-        displayedDocs = displayedDocs.filter(d => !d.read_by || !d.read_by.includes(userUid));
+        displayedDocs = displayedDocs.filter(d => !d.read_by || !d.read_by[userUid]);
     }
 
     const handleSelectDoc = async (d: PlatformDocument) => {
         setSelectedDoc(d);
-        if (!d.read_by || !d.read_by.includes(userUid)) {
+        if (!d.read_by || !d.read_by[userUid]) {
+            const nowIso = new Date().toISOString();
             // Optimistically update local state
             setLocalDocs(prev => prev.map(p => {
                 if (p.id === d.id) {
-                    return { ...p, read_by: [...(p.read_by || []), userUid] };
+                    return { ...p, read_by: { ...(p.read_by || {}), [userUid]: nowIso } };
                 }
                 return p;
             }));
@@ -68,7 +69,7 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({ documents, loading, pag
             try {
                 const docRef = doc(db, 'documents', d.id);
                 await updateDoc(docRef, {
-                    read_by: arrayUnion(userUid)
+                    [`read_by.${userUid}`]: nowIso
                 });
             } catch (err) {
                 console.error("Error updating read status", err);
@@ -188,7 +189,7 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({ documents, loading, pag
                                 {categories.map(cat => {
                                     const catDocs = localDocs.filter(d => cat.types.includes(d.type));
                                     const count = catDocs.length;
-                                    const unreadCount = catDocs.filter(d => !d.read_by || !d.read_by.includes(userUid)).length;
+                                    const unreadCount = catDocs.filter(d => !d.read_by || !d.read_by[userUid]).length;
                                     
                                     return (
                                         <button 
@@ -227,7 +228,7 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({ documents, loading, pag
                                         displayedDocs.map(doc => {
                                             const isSelectedDoc = selectedDoc?.id === doc.id;
                                             const isChecked = selectedIds.has(doc.id);
-                                            const isUnread = !doc.read_by || !doc.read_by.includes(userUid);
+                                            const isUnread = !doc.read_by || !doc.read_by[userUid];
                                             const date = doc.created_at ? new Date(doc.created_at?.toDate ? doc.created_at.toDate() : doc.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
                                             
                                             return (

@@ -44,6 +44,20 @@ const OnboardingWizard: React.FC = () => {
     const [passwordError, setPasswordError] = useState('');
     const [changingPassword, setChangingPassword] = useState(false);
     
+    // Step 2 state
+    const [phoneError, setPhoneError] = useState('');
+
+    // Validate E.164 phone numbers robustly without relying on browser metadata
+    const validatePhone = (phone: string): boolean => {
+        if (!phone || !phone.startsWith('+')) return false;
+        // Strip the leading '+' and count only digits
+        const digits = phone.replace(/\D/g, '');
+        if (digits.length < 7 || digits.length > 15) return false;
+        // For +1 (US/Canada), must be exactly 11 digits total (1 country code + 10 local)
+        if (phone.startsWith('+1') && digits.length !== 11) return false;
+        return true;
+    };
+    
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -115,7 +129,16 @@ const OnboardingWizard: React.FC = () => {
         }
     };
 
-    const handleNext = () => setStep(s => s + 1);
+    const handleNext = () => {
+        if (step === 2) {
+            setPhoneError('');
+            if (!validatePhone(userProfile?.phone || '')) {
+                setPhoneError('Please enter a valid, complete phone number.');
+                return;
+            }
+        }
+        setStep(s => s + 1);
+    };
 
     const handleComplete = async () => {
         if (!userProfile) return;
@@ -249,11 +272,31 @@ const OnboardingWizard: React.FC = () => {
                                     <PhoneInput
                                         defaultCountry="US"
                                         value={userProfile.phone}
-                                        onChange={(v) => handleUpdateField('phone', v || '')}
-                                        className={fieldClass}
+                                        onChange={(v) => {
+                                            handleUpdateField('phone', v || '');
+                                            if (phoneError) setPhoneError('');
+                                        }}
+                                        className={`${fieldClass} ${phoneError ? 'border-red-300 ring-1 ring-red-100' : validatePhone(userProfile.phone || '') ? 'border-teal-400 ring-1 ring-teal-100' : ''}`}
                                         placeholder="(555) 555-5555"
                                     />
+                                    {phoneError ? (
+                                        <p className="text-xs text-red-500 mt-1.5 flex items-center gap-1">
+                                            <span>⚠</span> {phoneError}
+                                        </p>
+                                    ) : (
+                                        <p className={`text-xs mt-1.5 transition-colors ${validatePhone(userProfile.phone || '') ? 'text-teal-600' : 'text-slate-400'}`}>
+                                            {(() => {
+                                                const digits = (userProfile.phone || '').replace(/\D/g, '');
+                                                const isUS = (userProfile.phone || '').startsWith('+1');
+                                                const needed = isUS ? 11 : 7;
+                                                if (digits.length === 0) return 'Enter your phone number including country code';
+                                                if (validatePhone(userProfile.phone || '')) return '✓ Valid phone number';
+                                                return `${digits.length} digit${digits.length !== 1 ? 's' : ''} entered${isUS ? ` — ${11 - digits.length} more needed` : ''}`;
+                                            })()}
+                                        </p>
+                                    )}
                                 </div>
+
                             </div>
                             
                             <div className="pt-6 flex justify-end">

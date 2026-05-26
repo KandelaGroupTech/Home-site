@@ -35,6 +35,7 @@ const Sidebar: React.FC<SidebarProps> = ({ role, activeTab, setActiveTab, isMobi
         { id: 'welcome', label: 'Welcome', icon: Home },
         { id: 'documents', label: 'Documents', icon: FolderClosed },
         { id: 'tax-documents', label: 'Tax Documents', icon: FolderClosed },
+        { id: 'upload-drop', label: 'Secure File Drop', icon: Upload },
         { id: 'faq', label: 'FAQ', icon: HelpCircle },
         { id: 'contact', label: 'Contact Us', icon: Globe },
     ];
@@ -43,6 +44,7 @@ const Sidebar: React.FC<SidebarProps> = ({ role, activeTab, setActiveTab, isMobi
         { id: 'overview', label: 'Overview', icon: LayoutDashboard },
         { id: 'upload', label: 'Upload Documents', icon: Upload },
         { id: 'manage-documents', label: 'Manage Documents', icon: FileText },
+        { id: 'investor-uploads', label: 'Investor Uploads', icon: Inbox },
         { id: 'announcements', label: 'Communications', icon: Megaphone },
         { id: 'directory', label: 'Investor Directory', icon: Users },
     ];

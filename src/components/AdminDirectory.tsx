@@ -98,8 +98,24 @@ const AdminDirectory: React.FC = () => {
             const secondaryApp = initializeApp(firebaseConfig, 'SecondaryApp' + Date.now());
             const secondaryAuth = getAuth(secondaryApp);
             
-            // 2. Generate random temporary password
-            const tempPassword = Math.random().toString(36).slice(-12) + 'aA1!';
+            // 2. Generate temporary password that starts & ends with a letter,
+            //    contains at least one digit and one special char, no periods or ambiguous chars.
+            const upperChars  = 'ABCDEFGHJKLMNPQRSTUVWXYZ';   // no I, O
+            const lowerChars  = 'abcdefghjkmnpqrstuvwxyz';    // no i, l, o
+            const digitChars  = '23456789';                    // no 0, 1
+            const specialChars = '#$%&*@';
+            const allChars = lowerChars + digitChars + specialChars;
+
+            const pick = (set: string) => set[Math.floor(Math.random() * set.length)];
+            const shuffle = (arr: string[]) => arr.sort(() => Math.random() - 0.5).join('');
+
+            // Build password: startLetter + 7 mixed chars + endLetter  (guaranteed length 9)
+            const middle = shuffle([
+                pick(digitChars),
+                pick(specialChars),
+                ...Array.from({ length: 5 }, () => pick(allChars))
+            ]);
+            const tempPassword = pick(upperChars) + middle + pick(lowerChars);
             
             // 3. Create User in secondary auth (prevents admin logout)
             const userCredential = await createUserWithEmailAndPassword(secondaryAuth, addEmail, tempPassword);

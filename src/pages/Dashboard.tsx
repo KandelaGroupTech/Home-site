@@ -8,10 +8,12 @@ import InvestorTaxDocuments from '../components/InvestorTaxDocuments';
 import InvestorFAQ from '../components/InvestorFAQ';
 import InvestorContact from '../components/InvestorContact';
 import InvestorProfile from '../components/InvestorProfile';
+import InvestorSecureDrop from '../components/InvestorSecureDrop';
 
 import AdminDashboard from '../components/AdminDashboard';
 import AdminDocumentUpload from '../components/AdminDocumentUpload';
 import AdminManageDocuments from '../components/AdminManageDocuments';
+import AdminInvestorUploads from '../components/AdminInvestorUploads';
 import AdminAnnouncements from '../components/AdminAnnouncements';
 import AdminDirectory from '../components/AdminDirectory';
 import { Menu } from 'lucide-react';
@@ -42,9 +44,9 @@ const Dashboard: React.FC = () => {
         return null;
     }
 
-    if (role === 'admin' && ['welcome', 'documents', 'tax-documents', 'faq', 'contact', 'profile'].includes(activeTab)) {
+    if (role === 'admin' && ['welcome', 'documents', 'tax-documents', 'upload-drop', 'faq', 'contact', 'profile'].includes(activeTab)) {
         setActiveTab('overview');
-    } else if (role === 'investor' && ['overview', 'upload', 'manage-documents', 'announcements', 'directory'].includes(activeTab)) {
+    } else if (role === 'investor' && ['overview', 'upload', 'manage-documents', 'investor-uploads', 'announcements', 'directory'].includes(activeTab)) {
         setActiveTab('welcome');
     }
 
@@ -54,6 +56,7 @@ const Dashboard: React.FC = () => {
                 case 'overview': return <AdminDashboard />;
                 case 'upload': return <AdminDocumentUpload />;
                 case 'manage-documents': return <AdminManageDocuments />;
+                case 'investor-uploads': return <AdminInvestorUploads />;
                 case 'announcements': return <AdminAnnouncements authorName={`${profile?.firstName || ''} ${profile?.lastName || ''}`.trim() || 'Admin'} />;
                 case 'directory': return <AdminDirectory />;
                 default: return null;
@@ -63,6 +66,7 @@ const Dashboard: React.FC = () => {
                 case 'welcome': return <InvestorWelcome profile={profile} setActiveTab={setActiveTab} />;
                 case 'documents': return <InvestorDocuments userUid={user.uid} />;
                 case 'tax-documents': return <InvestorTaxDocuments userUid={user.uid} />;
+                case 'upload-drop': return <InvestorSecureDrop userUid={user.uid} profile={profile} />;
                 case 'faq': return <InvestorFAQ />;
                 case 'contact': return <InvestorContact profile={profile} />;
                 case 'profile': return <InvestorProfile userUid={user.uid} initialProfile={profile} />;
