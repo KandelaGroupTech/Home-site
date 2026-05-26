@@ -1,110 +1,87 @@
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendPasswordResetEmailBranded = exports.deleteInvestor = void 0;
-const functions = __importStar(require("firebase-functions"));
-const admin = __importStar(require("firebase-admin"));
+import * as functions from 'firebase-functions';
+import * as admin from 'firebase-admin';
+
 // Initialize admin if not already initialized
 if (!admin.apps.length) {
     admin.initializeApp({ projectId: 'kandela-group-database' });
 }
+
 const db = admin.firestore();
+
 /**
  * Deletes an investor from Firebase Auth and Firestore.
  * Only callable by admins.
  */
-exports.deleteInvestor = functions.https.onCall(async (data, context) => {
-    var _a;
+export const deleteInvestor = functions.https.onCall(async (data, context) => {
     // 1. Verify caller is authenticated
     if (!context.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'You must be logged in to call this function.');
     }
+
     const targetUid = data.uid;
     if (!targetUid || typeof targetUid !== 'string') {
-        throw new functions.https.HttpsError('invalid-argument', 'The function must be called with one argument "uid" containing the user UID to delete.');
+        throw new functions.https.HttpsError(
+            'invalid-argument',
+            'The function must be called with one argument "uid" containing the user UID to delete.'
+        );
     }
+
     // 2. Verify caller is an admin
     const callerDoc = await db.collection('users').doc(context.auth.uid).get();
-    if (!callerDoc.exists || ((_a = callerDoc.data()) === null || _a === void 0 ? void 0 : _a.role) !== 'admin') {
+    if (!callerDoc.exists || callerDoc.data()?.role !== 'admin') {
         throw new functions.https.HttpsError('permission-denied', 'Only administrators can delete users.');
     }
+
     try {
         // 3. Delete from Firebase Auth
         await admin.auth().deleteUser(targetUid);
+
         // 4. Delete from Firestore
         await db.collection('users').doc(targetUid).delete();
+
         return { success: true, message: `Successfully deleted user ${targetUid}.` };
-    }
-    catch (error) {
+    } catch (error) {
         console.error('Error deleting user:', error);
-        throw new functions.https.HttpsError('internal', 'An error occurred while deleting the user: ' + error.message);
+        throw new functions.https.HttpsError('internal', 'An error occurred while deleting the user: ' + (error as any).message);
     }
 });
+
 /**
  * Sends a branded password reset email through the Resend-backed mail collection.
  * Generates a Firebase password reset link via Admin SDK and writes it to the
  * `mail` Firestore collection, which the Firebase Trigger Email extension picks up
  * and delivers via Resend — matching the style of welcome and announcement emails.
  */
-exports.sendPasswordResetEmailBranded = functions.https.onCall(async (data, _context) => {
-    var _a;
+export const sendPasswordResetEmailBranded = functions.https.onCall(async (data, _context) => {
     const { email } = data;
+
     if (!email || typeof email !== 'string') {
         throw new functions.https.HttpsError('invalid-argument', 'A valid email address is required.');
     }
+
     try {
         // Look up the user to get their first name for the greeting
-        let firstName;
+        let firstName: string | undefined;
         try {
             const userRecord = await admin.auth().getUserByEmail(email);
             const userDoc = await db.collection('users').doc(userRecord.uid).get();
-            firstName = (_a = userDoc.data()) === null || _a === void 0 ? void 0 : _a.firstName;
-        }
-        catch (_b) {
+            firstName = userDoc.data()?.firstName;
+        } catch {
             // User not found or Firestore error — proceed without personalization
         }
+
         // Generate the Firebase password reset link (handles token generation securely)
         const actionCodeSettings = {
             url: 'https://thekandelagroup.com/update-password',
             handleCodeInApp: false,
         };
         const resetLink = await admin.auth().generatePasswordResetLink(email, actionCodeSettings);
+
         // Build the branded HTML email body inline (mirrors emailTemplates.ts structure)
         const greeting = firstName ? `Dear ${firstName},` : 'Dear Investor,';
         const PLATFORM_URL = 'https://thekandelagroup.com';
         const year = new Date().getFullYear();
+
         const htmlBody = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -226,6 +203,7 @@ exports.sendPasswordResetEmailBranded = functions.https.onCall(async (data, _con
   </table>
 </body>
 </html>`;
+
         // Write to the `mail` collection — picked up by the Firebase Trigger Email extension → sent via Resend
         await db.collection('mail').add({
             to: email,
@@ -235,9 +213,9 @@ exports.sendPasswordResetEmailBranded = functions.https.onCall(async (data, _con
                 html: htmlBody,
             },
         });
+
         return { success: true };
-    }
-    catch (error) {
+    } catch (error: any) {
         console.error('Error sending branded password reset email:', error);
         // If the error is user-not-found, Firebase still returns success to prevent email enumeration
         if (error.code === 'auth/user-not-found') {
@@ -246,4 +224,3 @@ exports.sendPasswordResetEmailBranded = functions.https.onCall(async (data, _con
         throw new functions.https.HttpsError('internal', error.message || 'Failed to send password reset email.');
     }
 });
-//# sourceMappingURL=index.js.map

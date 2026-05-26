@@ -3,16 +3,3 @@
     "default": "kandela-group-database"
   }
 }
------------------------------------------
-[debug] [2026-05-23T03:21:06.148Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\richa\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js use
-[debug] [2026-05-23T03:21:06.149Z] CLI Version:   15.18.0
-[debug] [2026-05-23T03:21:06.149Z] Platform:      win32
-[debug] [2026-05-23T03:21:06.150Z] Node Version:  v22.17.1
-[debug] [2026-05-23T03:21:06.150Z] Time:          Fri May 22 2026 23:21:06 GMT-0400 (Eastern Daylight Time)
-[debug] [2026-05-23T03:21:06.150Z] ----------------------------------------------------------------------
-[debug] 
-[debug] [2026-05-23T03:21:06.154Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
-[warn] !  JSON error trying to load P:\02. Business\00. Websites\KandelaGroupHome\Home-site\.firebaserc 
-[debug] [2026-05-23T03:21:06.605Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
-[debug] [2026-05-23T03:21:06.605Z] > authorizing via signed-in user (richard.asala@gmail.com)
-[info] kandela-group-database

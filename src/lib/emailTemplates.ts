@@ -279,3 +279,53 @@ export function buildWelcomeEmail(email: string, tempPassword: string, recipient
 
   return emailWrapper(body);
 }
+
+/**
+ * Generates a branded password reset email with a secure reset link.
+ */
+export function buildPasswordResetEmail(resetLink: string, recipientFirstName?: string): string {
+  const greeting = recipientFirstName ? `Dear ${recipientFirstName},` : 'Dear Investor,';
+
+  const body = `
+    <p style="margin:0 0 20px;color:#334155;font-size:14px;line-height:1.7;font-weight:300;">
+      ${greeting}
+    </p>
+    <p style="margin:0 0 24px;color:#334155;font-size:14px;line-height:1.7;font-weight:300;">
+      We received a request to reset the password for your <strong style="color:#0f172a;">The Kandela Group</strong> investor account.
+    </p>
+
+    <!-- CTA Button -->
+    <div style="text-align:center;margin:32px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;">
+        <tr>
+          <td style="background-color:#006464;border-radius:50px;box-shadow:0 4px 12px rgba(0,100,100,0.3);">
+            <a href="${resetLink}" target="_blank" style="display:inline-block;padding:16px 42px;color:#ffffff;font-size:14px;font-weight:bold;text-decoration:none;letter-spacing:1px;text-transform:uppercase;">
+              Reset Password
+            </a>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Security Notice Card -->
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+      <tr>
+        <td style="background-color:#f8fafc;border:1px solid #e2e8f0;border-left:4px solid #64748b;border-radius:8px;padding:16px 20px;">
+          <p style="margin:0 0 4px;color:#64748b;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;">
+            Security Notice
+          </p>
+          <p style="margin:0;color:#475569;font-size:13px;line-height:1.6;font-weight:300;">
+            This link will expire in <strong>1 hour</strong>. If you did not request a password reset, please ignore this email — your password will remain unchanged.
+          </p>
+        </td>
+      </tr>
+    </table>
+
+    <p style="margin:0 0 8px;color:#94a3b8;font-size:11px;">If the button above doesn't work, copy and paste this link into your browser:</p>
+    <p style="margin:0;word-break:break-all;">
+      <a href="${resetLink}" style="color:#006464;font-size:11px;text-decoration:none;">${resetLink}</a>
+    </p>
+  `;
+
+  return emailWrapper(body);
+}

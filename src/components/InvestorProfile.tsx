@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { db, auth } from '../lib/firebase';
+import { db, auth, functions } from '../lib/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { UserProfile } from '../types';
 import { Save, Check, Key, ShieldAlert } from 'lucide-react';
-import { sendPasswordResetEmail } from 'firebase/auth';
+import { httpsCallable } from 'firebase/functions';
 import 'react-phone-number-input/style.css';
 import PhoneInput from 'react-phone-number-input';
 import Autocomplete from 'react-google-autocomplete';
@@ -36,11 +36,8 @@ const InvestorProfile: React.FC<Props> = ({ userUid, initialProfile }) => {
         setResetSent(false);
 
         try {
-            const actionCodeSettings = {
-                url: `${window.location.origin}/update-password`,
-                handleCodeInApp: true,
-            };
-            await sendPasswordResetEmail(auth, profile.email, actionCodeSettings);
+            const sendBrandedReset = httpsCallable(functions, 'sendPasswordResetEmailBranded');
+            await sendBrandedReset({ email: profile.email });
             setResetSent(true);
             setTimeout(() => setResetSent(false), 5000);
         } catch (err: any) {

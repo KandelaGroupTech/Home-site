@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { auth } from '../lib/firebase';
-import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
+import { auth, functions } from '../lib/firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { httpsCallable } from 'firebase/functions';
 
 const LoginPage: React.FC = () => {
     const [email, setEmail] = useState('');
@@ -35,15 +36,12 @@ const LoginPage: React.FC = () => {
         setError(null);
 
         try {
-            const actionCodeSettings = {
-                url: `${window.location.origin}/update-password`,
-                handleCodeInApp: true,
-            };
-            await sendPasswordResetEmail(auth, email, actionCodeSettings);
+            const sendBrandedReset = httpsCallable(functions, 'sendPasswordResetEmailBranded');
+            await sendBrandedReset({ email });
             setResetSent(true);
             setError(null);
         } catch (err: any) {
-            setError(err.message);
+            setError(err.message || 'Failed to send password reset email. Please try again.');
         } finally {
             setResetLoading(false);
         }
