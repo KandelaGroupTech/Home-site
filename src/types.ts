@@ -40,7 +40,7 @@ export interface UserProfile {
 export interface PlatformDocument {
     id: string;
     title: string;
-    type: 'tax' | 'financial' | 'general' | 'other' | 'capital_call' | 'distribution' | 'tax_distribution';
+    type: 'tax' | 'financial' | 'general' | 'other' | 'capital_call' | 'distribution' | 'tax_distribution' | 'legal';
     file_url: string;
     target_audience: 'all' | 'specific_users';
     allowed_uids: string[];
@@ -54,6 +54,7 @@ export interface InvestorUpload {
     investor_name: string;
     file_name: string;
     file_url: string;
+    note?: string;
     created_at: any; // Firestore Timestamp
 }
 

@@ -225,6 +225,7 @@ const AdminDocumentUpload: React.FC = () => {
                             <option value="financial">Financial Report</option>
                             <option value="capital_call">Capital Call</option>
                             <option value="distribution">Distribution</option>
+                            <option value="legal">Legal</option>
                             <option value="tax">Tax Document (K-1, 1099)</option>
                             <option value="tax_distribution">Tax Distribution</option>
                         </select>

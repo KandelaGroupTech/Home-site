@@ -51,6 +51,7 @@ const InvestorDocuments: React.FC<Props> = ({ userUid }) => {
         { key: 'capital_calls', label: 'Capital Calls', types: ['capital_call'] },
         { key: 'distributions', label: 'Distributions', types: ['distribution'] },
         { key: 'financial', label: 'Investment Summaries', types: ['financial'] },
+        { key: 'legal', label: 'Legal', types: ['legal'] },
         { key: 'general', label: 'Other Correspondences', types: ['general', 'other'] }
     ];
 

@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { X, Send, Check } from 'lucide-react';
+import { X, Send, Check, Upload, Paperclip, Loader2 } from 'lucide-react';
 import emailjs from '@emailjs/browser';
+import { storage } from '../lib/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 interface ContactModalProps {
   isOpen: boolean;
@@ -27,6 +29,7 @@ const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose }) => {
     message: ''
   });
   const [errors, setErrors] = useState<FormErrors>({});
+  const [files, setFiles] = useState<File[]>([]);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isSending, setIsSending] = useState(false);
 
@@ -43,6 +46,7 @@ const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose }) => {
         setFormData({ name: '', email: '', message: '' });
         setErrors({});
         setIsSuccess(false);
+        setFiles([]);
       }, 300);
 
       return () => {
@@ -52,10 +56,20 @@ const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose }) => {
     }
   }, [isOpen]);
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setFiles(prev => [...prev, ...Array.from(e.target.files!)]);
+    }
+  };
+
+  const removeFile = (index: number) => {
+    setFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
     let isValid = true;
-
+ 
     if (!formData.name.trim()) {
       newErrors.name = 'Name is required';
       isValid = false;
@@ -84,18 +98,33 @@ const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose }) => {
       setIsSending(true);
       
       try {
+        // Upload attachments
+        const attachmentUrls: string[] = [];
+        for (const file of files) {
+          const fileRef = ref(storage, `public_contact_attachments/${formData.name.replace(/\s+/g, '_')}_${Date.now()}_${file.name}`);
+          const snap = await uploadBytes(fileRef, file);
+          const url = await getDownloadURL(snap.ref);
+          attachmentUrls.push(`${file.name}: ${url}`);
+        }
+
+        let messageContent = formData.message;
+        if (attachmentUrls.length > 0) {
+          messageContent += `\n\nATTACHMENTS:\n${attachmentUrls.join('\n')}`;
+        }
+
         await emailjs.send(
           import.meta.env.VITE_EMAILJS_SERVICE_ID,
           import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
           {
             name: formData.name,
             email: formData.email,
-            message: formData.message,
+            message: messageContent,
           },
           import.meta.env.VITE_EMAILJS_PUBLIC_KEY
         );
         
         setIsSuccess(true);
+        setFiles([]);
         // Close modal after a delay
         setTimeout(() => {
           onClose();
@@ -217,13 +246,55 @@ const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose }) => {
                 )}
               </div>
 
+              <div className="space-y-1">
+                <label className="text-xs uppercase tracking-wider text-slate-500 font-medium">Attachments (Optional)</label>
+                <div className="border border-dashed border-white/10 bg-white/5 rounded p-4 text-center hover:bg-white/10 transition-all relative">
+                  <input
+                    type="file"
+                    multiple
+                    onChange={handleFileChange}
+                    className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+                    disabled={isSending}
+                  />
+                  <div className="flex flex-col items-center justify-center pointer-events-none">
+                    <Upload size={18} className="text-[#006464] mb-1.5" />
+                    <p className="text-slate-300 font-medium text-xs">Drag & drop or click to attach files</p>
+                    <p className="text-[10px] text-slate-500 mt-0.5">PDF, DOCX, XLSX, Images up to 20MB</p>
+                  </div>
+                </div>
+                {files.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {files.map((file, i) => (
+                      <div key={i} className="flex items-center gap-1.5 bg-white/5 border border-white/10 pl-2 pr-1 py-0.5 rounded text-xs text-slate-300">
+                        <Paperclip size={10} className="text-[#006464]" />
+                        <span className="max-w-[130px] truncate">{file.name}</span>
+                        <button 
+                          type="button" 
+                          onClick={() => removeFile(i)}
+                          className="p-0.5 hover:text-red-400 rounded transition-colors"
+                          disabled={isSending}
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <button 
                 type="submit"
                 disabled={isSending}
                 className="w-full bg-[#006464] hover:bg-[#005050] text-white py-4 text-sm uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2 group mt-2 border border-transparent hover:border-[#007d7d] disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <span>{isSending ? 'Sending...' : 'Send Message'}</span>
-                {!isSending && <Send size={14} className="group-hover:translate-x-1 transition-transform" />}
+                {isSending ? (
+                  <><Loader2 size={14} className="animate-spin" /> Sending...</>
+                ) : (
+                  <>
+                    <span>Send Message</span>
+                    <Send size={14} className="group-hover:translate-x-1 transition-transform" />
+                  </>
+                )}
               </button>
             </form>
           </>

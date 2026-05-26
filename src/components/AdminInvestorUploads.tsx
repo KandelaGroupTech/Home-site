@@ -82,12 +82,20 @@ const AdminInvestorUploads: React.FC = () => {
                                     
                                     return (
                                         <tr key={upload.id} className="hover:bg-slate-50 transition-colors">
-                                            <td className="p-4">
-                                                <div className="flex items-center gap-3">
-                                                    <FileText size={18} className="text-teal-600 shrink-0" />
-                                                    <a href={upload.file_url} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-slate-800 hover:text-teal-600 transition-colors line-clamp-1">
-                                                        {upload.file_name}
-                                                    </a>
+                                            <td className="p-4 align-top">
+                                                <div className="flex items-start gap-3">
+                                                    <FileText size={18} className="text-teal-600 shrink-0 mt-0.5" />
+                                                    <div>
+                                                        <a href={upload.file_url} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-slate-800 hover:text-teal-600 transition-colors line-clamp-1">
+                                                            {upload.file_name}
+                                                        </a>
+                                                        {upload.note && (
+                                                            <div className="mt-1.5 p-2.5 bg-slate-50 border border-slate-100 rounded-lg text-xs text-slate-500 font-light max-w-md italic shadow-sm leading-relaxed">
+                                                                <span className="font-semibold text-slate-600 not-italic block mb-0.5">Note:</span>
+                                                                {upload.note}
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </td>
                                             <td className="p-4 text-sm text-slate-600 font-medium">

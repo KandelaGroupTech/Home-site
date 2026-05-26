@@ -12,6 +12,7 @@ interface Props {
 
 const InvestorSecureDrop: React.FC<Props> = ({ userUid, profile }) => {
     const [file, setFile] = useState<File | null>(null);
+    const [note, setNote] = useState('');
     const [uploading, setUploading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState('');
@@ -42,11 +43,13 @@ const InvestorSecureDrop: React.FC<Props> = ({ userUid, profile }) => {
                 investor_name: `${profile.firstName} ${profile.lastName}`,
                 file_name: file.name,
                 file_url: downloadUrl,
+                note: note.trim() || null,
                 created_at: serverTimestamp()
             });
 
             setSuccess(true);
             setFile(null);
+            setNote('');
         } catch (err: any) {
             console.error('Error uploading file:', err);
             setError('Failed to upload file. Please try again.');
@@ -110,13 +113,25 @@ const InvestorSecureDrop: React.FC<Props> = ({ userUid, profile }) => {
                 </div>
 
                 {file && (
-                    <button 
-                        onClick={handleUpload}
-                        disabled={uploading}
-                        className="mt-6 w-full bg-black text-white py-3 rounded-full font-semibold text-sm hover:bg-slate-800 transition-colors flex items-center justify-center gap-2 disabled:opacity-70"
-                    >
-                        {uploading ? <><Loader2 size={18} className="animate-spin" /> Uploading...</> : 'Submit Document'}
-                    </button>
+                    <>
+                        <div className="mt-5 text-left animate-in fade-in duration-300">
+                            <label className="text-xs text-slate-500 uppercase tracking-wider font-semibold block mb-1.5">Add a Note (Optional)</label>
+                            <textarea
+                                value={note}
+                                onChange={e => setNote(e.target.value)}
+                                disabled={uploading}
+                                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-800 focus:border-teal-500 focus:ring-2 focus:ring-teal-100 focus:outline-none transition-all font-light text-sm placeholder:text-slate-300 resize-none h-24"
+                                placeholder="Provide extra details or context about this file..."
+                            />
+                        </div>
+                        <button 
+                            onClick={handleUpload}
+                            disabled={uploading}
+                            className="mt-6 w-full bg-black text-white py-3 rounded-full font-semibold text-sm hover:bg-slate-800 transition-colors flex items-center justify-center gap-2 disabled:opacity-70 shadow-md"
+                        >
+                            {uploading ? <><Loader2 size={18} className="animate-spin" /> Uploading...</> : 'Submit Document'}
+                        </button>
+                    </>
                 )}
             </div>
         </div>
