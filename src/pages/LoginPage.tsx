@@ -35,7 +35,11 @@ const LoginPage: React.FC = () => {
         setError(null);
 
         try {
-            await sendPasswordResetEmail(auth, email);
+            const actionCodeSettings = {
+                url: `${window.location.origin}/update-password`,
+                handleCodeInApp: true,
+            };
+            await sendPasswordResetEmail(auth, email, actionCodeSettings);
             setResetSent(true);
             setError(null);
         } catch (err: any) {

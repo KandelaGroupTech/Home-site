@@ -36,7 +36,11 @@ const InvestorProfile: React.FC<Props> = ({ userUid, initialProfile }) => {
         setResetSent(false);
 
         try {
-            await sendPasswordResetEmail(auth, profile.email);
+            const actionCodeSettings = {
+                url: `${window.location.origin}/update-password`,
+                handleCodeInApp: true,
+            };
+            await sendPasswordResetEmail(auth, profile.email, actionCodeSettings);
             setResetSent(true);
             setTimeout(() => setResetSent(false), 5000);
         } catch (err: any) {
