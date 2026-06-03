@@ -13,7 +13,8 @@ import {
     FolderClosed,
     HelpCircle,
     Globe,
-    X
+    X,
+    Mail
 } from 'lucide-react';
 import { auth } from '../lib/firebase';
 import { signOut } from 'firebase/auth';
@@ -33,6 +34,7 @@ const Sidebar: React.FC<SidebarProps> = ({ role, activeTab, setActiveTab, isMobi
 
     const investorNav = [
         { id: 'welcome', label: 'Welcome', icon: Home },
+        { id: 'communications', label: 'Communications', icon: Mail },
         { id: 'documents', label: 'Documents', icon: FolderClosed },
         { id: 'tax-documents', label: 'Tax Documents', icon: FolderClosed },
         { id: 'upload-drop', label: 'Secure File Drop', icon: Upload },

@@ -3,6 +3,7 @@ import { useAuth } from '../hooks/useAuth';
 import Sidebar from '../components/Sidebar';
 
 import InvestorWelcome from '../components/InvestorWelcome';
+import InvestorFeed from '../components/InvestorFeed';
 import InvestorDocuments from '../components/InvestorDocuments';
 import InvestorTaxDocuments from '../components/InvestorTaxDocuments';
 import InvestorFAQ from '../components/InvestorFAQ';
@@ -44,7 +45,7 @@ const Dashboard: React.FC = () => {
         return null;
     }
 
-    if (role === 'admin' && ['welcome', 'documents', 'tax-documents', 'upload-drop', 'faq', 'contact', 'profile'].includes(activeTab)) {
+    if (role === 'admin' && ['welcome', 'communications', 'documents', 'tax-documents', 'upload-drop', 'faq', 'contact', 'profile'].includes(activeTab)) {
         setActiveTab('overview');
     } else if (role === 'investor' && ['overview', 'upload', 'manage-documents', 'investor-uploads', 'announcements', 'directory'].includes(activeTab)) {
         setActiveTab('welcome');
@@ -64,6 +65,7 @@ const Dashboard: React.FC = () => {
         } else {
             switch (activeTab) {
                 case 'welcome': return <InvestorWelcome profile={profile} setActiveTab={setActiveTab} />;
+                case 'communications': return <InvestorFeed />;
                 case 'documents': return <InvestorDocuments userUid={user.uid} />;
                 case 'tax-documents': return <InvestorTaxDocuments userUid={user.uid} />;
                 case 'upload-drop': return <InvestorSecureDrop userUid={user.uid} profile={profile} />;
