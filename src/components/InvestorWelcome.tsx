@@ -84,69 +84,6 @@ const InvestorWelcome: React.FC<Props> = ({ profile, setActiveTab }) => {
                 </button>
             </div>
 
-            {/* Announcements Feed */}
-            <h2 className="text-lg font-serif text-slate-800 mb-4 flex items-center gap-2">
-                <Mail size={18} className="text-teal-600" /> Recent Communications
-            </h2>
-
-            {loading ? (
-                <div className="space-y-4">
-                    {[1, 2].map(i => (
-                        <div key={i} className="h-20 bg-teal-50 rounded-xl animate-pulse" />
-                    ))}
-                </div>
-            ) : announcements.length === 0 ? (
-                <div className="text-center py-12 border-2 border-dashed border-teal-100 rounded-2xl bg-white">
-                    <p className="text-slate-400 font-light">No recent communications.</p>
-                </div>
-            ) : (
-                <div className="space-y-3">
-                    {announcements.map((ann, index) => {
-                        const isOpen = expanded === ann.id;
-                        const date = ann.created_at
-                            ? new Date(ann.created_at?.toDate ? ann.created_at.toDate() : ann.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-                            : '';
-                        return (
-                            <div
-                                key={ann.id}
-                                className={`bg-white rounded-xl border transition-all duration-300 overflow-hidden ${isOpen ? 'border-teal-300 shadow-[0_4px_20px_rgba(0,100,100,0.12)]' : 'border-slate-200 hover:border-teal-200 shadow-sm'}`}
-                            >
-                                <button
-                                    onClick={() => setExpanded(isOpen ? null : ann.id)}
-                                    className="w-full flex items-center justify-between p-5 text-left"
-                                >
-                                    <div className="flex items-center gap-4">
-                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 ${isOpen ? 'bg-teal-600 text-white' : 'bg-teal-50 text-teal-700'}`}>
-                                            {index + 1}
-                                        </div>
-                                        <div>
-                                            <p className="text-slate-800 font-medium">{ann.title}</p>
-                                            <div className="flex items-center gap-2 mt-0.5">
-                                                <Calendar size={11} className="text-slate-400" />
-                                                <span className="text-xs text-slate-400 font-light">{date}</span>
-                                                <span className="text-slate-300">·</span>
-                                                <span className="text-xs text-slate-400 font-light">{ann.author_name}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className={`p-1.5 rounded-full transition-colors ${isOpen ? 'bg-teal-50 text-teal-600' : 'text-slate-400'}`}>
-                                        {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                                    </div>
-                                </button>
-
-                                {isOpen && (
-                                    <div className="px-5 pb-5">
-                                        <div className="border-t border-slate-100 pt-4">
-                                            <p className="text-slate-600 font-light leading-relaxed whitespace-pre-wrap text-sm">{ann.content}</p>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        );
-                    })}
-                </div>
-            )}
-        </div>
     );
 };
 
