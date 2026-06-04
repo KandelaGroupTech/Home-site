@@ -32,6 +32,9 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendPasswordResetEmailBranded = exports.deleteInvestor = void 0;
 const functions = __importStar(require("firebase-functions"));
@@ -246,4 +249,6 @@ exports.sendPasswordResetEmailBranded = functions.https.onCall(async (data, _con
         throw new functions.https.HttpsError('internal', error.message || 'Failed to send password reset email.');
     }
 });
+// Export Airtable Sync Functions
+__exportStar(require("./airtable"), exports);
 //# sourceMappingURL=index.js.map

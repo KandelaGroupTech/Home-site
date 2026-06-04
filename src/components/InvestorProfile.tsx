@@ -7,6 +7,8 @@ import { httpsCallable } from 'firebase/functions';
 import 'react-phone-number-input/style.css';
 import PhoneInput from 'react-phone-number-input';
 import Autocomplete from 'react-google-autocomplete';
+import { QRCodeSVG } from 'qrcode.react';
+import { multiFactor, TotpMultiFactorGenerator } from 'firebase/auth';
 
 interface Props {
     userUid: string;
@@ -29,6 +31,23 @@ const InvestorProfile: React.FC<Props> = ({ userUid, initialProfile }) => {
     const [resetError, setResetError] = useState<string | null>(null);
     const autocompleteRef = useRef<any>(null);
 
+    const [mfaEnabled, setMfaEnabled] = useState(false);
+    const [enrollingMfa, setEnrollingMfa] = useState(false);
+    const [totpSecret, setTotpSecret] = useState<any>(null);
+    const [totpCode, setTotpCode] = useState('');
+    const [mfaError, setMfaError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (auth.currentUser) {
+            try {
+                const enrolledFactors = multiFactor(auth.currentUser).enrolledFactors;
+                setMfaEnabled(enrolledFactors.length > 0);
+            } catch (e) {
+                console.log("MFA check failed, user may need to re-authenticate", e);
+            }
+        }
+    }, [auth.currentUser]);
+
     const handlePasswordReset = async () => {
         if (!profile.email) return;
         setResetLoading(true);
@@ -45,6 +64,47 @@ const InvestorProfile: React.FC<Props> = ({ userUid, initialProfile }) => {
             setResetError(err.message || 'Failed to send password reset email. Please try again.');
         } finally {
             setResetLoading(false);
+        }
+    };
+
+    const handleStartMfaEnrollment = async () => {
+        if (!auth.currentUser) return;
+        setMfaError(null);
+        try {
+            const multiFactorSession = await multiFactor(auth.currentUser).getSession();
+            const secret = await TotpMultiFactorGenerator.generateSecret(multiFactorSession);
+            setTotpSecret(secret);
+            setEnrollingMfa(true);
+        } catch (err: any) {
+            setMfaError(err.message || 'Failed to start MFA enrollment.');
+        }
+    };
+
+    const handleCompleteMfaEnrollment = async () => {
+        if (!auth.currentUser || !totpSecret) return;
+        setMfaError(null);
+        try {
+            const multiFactorAssertion = TotpMultiFactorGenerator.assertionForEnrollment(totpSecret, totpCode);
+            await multiFactor(auth.currentUser).enroll(multiFactorAssertion, 'Authenticator App');
+            setMfaEnabled(true);
+            setEnrollingMfa(false);
+            setTotpSecret(null);
+            setTotpCode('');
+        } catch (err: any) {
+            setMfaError('Invalid code. Please try again.');
+        }
+    };
+
+    const handleDisableMfa = async () => {
+        if (!auth.currentUser) return;
+        try {
+            const enrolledFactors = multiFactor(auth.currentUser).enrolledFactors;
+            if (enrolledFactors.length > 0) {
+                await multiFactor(auth.currentUser).unenroll(enrolledFactors[0]);
+                setMfaEnabled(false);
+            }
+        } catch (err: any) {
+            setMfaError('Failed to disable MFA.');
         }
     };
 
@@ -246,9 +306,11 @@ const InvestorProfile: React.FC<Props> = ({ userUid, initialProfile }) => {
                     </div>
                 </div>
                 {/* Security Card */}
-                <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
                     <SectionTitle>Security & Password</SectionTitle>
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    
+                    {/* Password Reset */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-100">
                         <div>
                             <p className="text-slate-700 font-medium text-sm">Reset Password</p>
                             <p className="text-slate-400 text-xs font-light mt-0.5">We will send a secure password reset link to your registered email address ({profile.email})</p>
@@ -260,14 +322,10 @@ const InvestorProfile: React.FC<Props> = ({ userUid, initialProfile }) => {
                             className={`flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all shrink-0 shadow-sm border ${
                                 resetSent
                                     ? 'bg-green-50 text-green-700 border-green-300'
-                                    : 'bg-slate-900 hover:bg-slate-800 text-white border-slate-900'
+                                    : 'bg-white text-slate-700 border-slate-200 hover:border-teal-300 hover:text-teal-700'
                             }`}
                         >
-                            {resetSent ? (
-                                <><Check size={16} /> Link Sent!</>
-                            ) : (
-                                <><Key size={16} /> {resetLoading ? 'Sending...' : 'Request Reset Link'}</>
-                            )}
+                            {resetSent ? <><Check size={16} /> Link Sent</> : 'Send Reset Link'}
                         </button>
                     </div>
                     {resetError && (
@@ -276,6 +334,78 @@ const InvestorProfile: React.FC<Props> = ({ userUid, initialProfile }) => {
                             {resetError}
                         </div>
                     )}
+
+                    {/* Two-Factor Authentication (MFA) */}
+                    <div className="pt-6">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div>
+                                <p className="text-slate-700 font-medium text-sm">Two-Factor Authentication (2FA)</p>
+                                <p className="text-slate-400 text-xs font-light mt-0.5">Secure your account with a Google Authenticator or Authy TOTP code.</p>
+                            </div>
+                            {mfaEnabled ? (
+                                <button
+                                    type="button"
+                                    onClick={handleDisableMfa}
+                                    className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all shrink-0 shadow-sm border bg-white text-red-600 border-red-200 hover:bg-red-50"
+                                >
+                                    Disable 2FA
+                                </button>
+                            ) : !enrollingMfa ? (
+                                <button
+                                    type="button"
+                                    onClick={handleStartMfaEnrollment}
+                                    className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all shrink-0 shadow-sm border bg-teal-600 text-white border-teal-700 hover:bg-teal-700"
+                                >
+                                    Enable 2FA
+                                </button>
+                            ) : null}
+                        </div>
+
+                        {enrollingMfa && totpSecret && (
+                            <div className="mt-6 p-6 bg-slate-50 border border-slate-200 rounded-xl space-y-6">
+                                <div className="flex items-start gap-4">
+                                    <div className="p-3 bg-white border border-slate-200 rounded-lg shrink-0">
+                                        <QRCodeSVG value={totpSecret.generateQrCodeUrl(profile.email || 'investor@kandelagroup.com', 'The Kandela Group')} size={120} />
+                                    </div>
+                                    <div className="space-y-3 flex-1">
+                                        <p className="text-sm text-slate-700 font-medium">Scan the QR code</p>
+                                        <p className="text-xs text-slate-500 font-light leading-relaxed">
+                                            Open your Authenticator app (like Google Authenticator or Authy) and scan this QR code to add your account.
+                                        </p>
+                                        <div className="pt-2">
+                                            <p className="text-xs text-slate-400 mb-1">Enter the 6-digit code to verify:</p>
+                                            <div className="flex items-center gap-2">
+                                                <input
+                                                    type="text"
+                                                    value={totpCode}
+                                                    onChange={(e) => setTotpCode(e.target.value)}
+                                                    className="w-32 bg-white border border-slate-300 rounded p-2 text-slate-700 focus:border-teal-500 focus:outline-none text-center tracking-[0.2em]"
+                                                    maxLength={6}
+                                                    placeholder="000000"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={handleCompleteMfaEnrollment}
+                                                    disabled={totpCode.length < 6}
+                                                    className="px-4 py-2 bg-teal-600 text-white text-sm font-medium rounded hover:bg-teal-700 disabled:opacity-50"
+                                                >
+                                                    Verify
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => { setEnrollingMfa(false); setTotpSecret(null); setMfaError(null); }}
+                                                    className="px-4 py-2 text-slate-500 text-sm hover:text-slate-700"
+                                                >
+                                                    Cancel
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {mfaError && <p className="text-xs text-red-500">{mfaError}</p>}
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Save */}

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, functions } from '../lib/firebase';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, getMultiFactorResolver, TotpMultiFactorGenerator } from 'firebase/auth';
 import { httpsCallable } from 'firebase/functions';
 
 const LoginPage: React.FC = () => {
@@ -12,6 +12,8 @@ const LoginPage: React.FC = () => {
     const [isForgotPassword, setIsForgotPassword] = useState(false);
     const [resetSent, setResetSent] = useState(false);
     const [resetLoading, setResetLoading] = useState(false);
+    const [mfaResolver, setMfaResolver] = useState<any>(null);
+    const [mfaCode, setMfaCode] = useState('');
     const navigate = useNavigate();
 
     const handleLogin = async (e: React.FormEvent) => {
@@ -23,7 +25,35 @@ const LoginPage: React.FC = () => {
             await signInWithEmailAndPassword(auth, email, password);
             navigate('/dashboard');
         } catch (err: any) {
-            setError(err.message);
+            if (err.code === 'auth/multi-factor-auth-required') {
+                const resolver = getMultiFactorResolver(auth, err);
+                if (resolver.hints[0].factorId === TotpMultiFactorGenerator.FACTOR_ID) {
+                    setMfaResolver(resolver);
+                } else {
+                    setError('Unsupported multi-factor authentication method.');
+                }
+            } else {
+                setError(err.message);
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleMfaSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        setError(null);
+
+        try {
+            const multiFactorAssertion = TotpMultiFactorGenerator.assertionForSignIn(
+                mfaResolver.hints[0].uid,
+                mfaCode
+            );
+            await mfaResolver.resolveSignIn(multiFactorAssertion);
+            navigate('/dashboard');
+        } catch (err: any) {
+            setError(err.message || 'Invalid authenticator code.');
         } finally {
             setLoading(false);
         }
@@ -51,7 +81,7 @@ const LoginPage: React.FC = () => {
         <div className="min-h-screen w-full bg-slate-950 flex items-center justify-center p-4">
             <div className="w-full max-w-md bg-slate-900/50 border border-white/10 p-8 rounded-lg backdrop-blur-sm">
                 <h1 className="text-2xl font-serif text-white mb-6 text-center">
-                    {isForgotPassword ? (resetSent ? 'Link Sent' : 'Reset Password') : 'Investor Login'}
+                    {mfaResolver ? 'Two-Factor Authentication' : isForgotPassword ? (resetSent ? 'Link Sent' : 'Reset Password') : 'Investor Login'}
                 </h1>
 
                 {error && (
@@ -60,7 +90,38 @@ const LoginPage: React.FC = () => {
                     </div>
                 )}
 
-                {isForgotPassword ? (
+                {mfaResolver ? (
+                    <form onSubmit={handleMfaSubmit} className="space-y-4">
+                        <p className="text-xs text-slate-400 font-light leading-relaxed mb-4 text-center">
+                            Enter the 6-digit code from your Authenticator app.
+                        </p>
+                        <div>
+                            <input
+                                type="text"
+                                value={mfaCode}
+                                onChange={(e) => setMfaCode(e.target.value)}
+                                className="w-full bg-slate-950 border border-white/10 rounded p-2 text-white focus:border-[#006464] focus:outline-none transition-colors text-center tracking-[0.5em] text-lg font-light"
+                                required
+                                maxLength={6}
+                                placeholder="000000"
+                            />
+                        </div>
+                        <button
+                            type="submit"
+                            disabled={loading || mfaCode.length < 6}
+                            className="w-full bg-[#006464] hover:bg-[#007d7d] text-white py-2 rounded transition-colors disabled:opacity-50 text-sm font-medium mt-4"
+                        >
+                            {loading ? 'Verifying...' : 'Verify & Login'}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => { setMfaResolver(null); setMfaCode(''); setError(null); }}
+                            className="w-full text-center text-xs text-slate-500 hover:text-white transition-colors pt-2 block"
+                        >
+                            Cancel
+                        </button>
+                    </form>
+                ) : isForgotPassword ? (
                     resetSent ? (
                         <div className="text-center space-y-4 py-4">
                             <div className="w-12 h-12 rounded-full bg-[#006464]/10 border border-[#006464]/30 flex items-center justify-center mx-auto text-[#006464]">

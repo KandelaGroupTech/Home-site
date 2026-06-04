@@ -84,6 +84,7 @@ const InvestorWelcome: React.FC<Props> = ({ profile, setActiveTab }) => {
                 </button>
             </div>
 
+        </div>
     );
 };
 
