@@ -24,7 +24,7 @@ const companies: CompanyProfile[] = [
     {
         id: '3',
         name: 'Reelcraft Media',
-        description: 'A forward-thinking media house dedicated to producing high-quality, impactful content across various digital platforms.',
+        description: 'Stop losing customers to businesses with bigger marketing budgets. Reelcraft delivers agency-quality video ads and social content, powered by AI and built around your brand.',
         icon: Clapperboard,
         href: '#',
     }
