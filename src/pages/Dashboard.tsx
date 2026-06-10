@@ -66,8 +66,8 @@ const Dashboard: React.FC = () => {
             switch (activeTab) {
                 case 'welcome': return <InvestorWelcome profile={profile} setActiveTab={setActiveTab} />;
                 case 'communications': return <InvestorFeed />;
-                case 'documents': return <InvestorDocuments userUid={user.uid} />;
-                case 'tax-documents': return <InvestorTaxDocuments userUid={user.uid} />;
+                case 'documents': return <InvestorDocuments userUid={user.uid} userGroups={profile?.groups || []} />;
+                case 'tax-documents': return <InvestorTaxDocuments userUid={user.uid} userGroups={profile?.groups || []} />;
                 case 'upload-drop': return <InvestorSecureDrop userUid={user.uid} profile={profile} />;
                 case 'faq': return <InvestorFAQ />;
                 case 'contact': return <InvestorContact profile={profile} />;

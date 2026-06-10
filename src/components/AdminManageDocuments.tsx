@@ -148,7 +148,7 @@ const AdminManageDocuments: React.FC = () => {
                                             </td>
                                             <td className="p-4">
                                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${doc.target_audience === 'all' ? 'bg-blue-50 text-blue-700' : 'bg-purple-50 text-purple-700'}`}>
-                                                    {doc.target_audience === 'all' ? 'All Investors' : `${doc.allowed_uids?.length || 0} Investors`}
+                                                    {doc.target_audience === 'all' ? 'All Investors' : doc.target_audience === 'groups' && doc.allowed_groups?.length ? `Groups: ${doc.allowed_groups.join(', ')}` : `${doc.allowed_uids?.length || 0} Investors`}
                                                 </span>
                                             </td>
                                             <td className="p-4 text-sm text-slate-500">

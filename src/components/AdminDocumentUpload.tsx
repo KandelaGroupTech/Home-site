@@ -104,6 +104,7 @@ const AdminDocumentUpload: React.FC = () => {
                                     : audience === 'groups'
                                         ? usersList.filter(u => u.groups?.some(g => selectedGroups.includes(g))).map(u => u.uid)
                                         : selectedUsers,
+                                allowed_groups: audience === 'groups' ? selectedGroups : [],
                                 created_at: new Date()
                             });
 

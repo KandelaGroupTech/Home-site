@@ -6,25 +6,30 @@ import DocumentViewer from './DocumentViewer';
 
 interface Props {
     userUid: string;
+    userGroups?: string[];
 }
 
-const InvestorDocuments: React.FC<Props> = ({ userUid }) => {
+const InvestorDocuments: React.FC<Props> = ({ userUid, userGroups = [] }) => {
     const [documents, setDocuments] = useState<PlatformDocument[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchDocs = async () => {
             try {
-                const [allSnap, specificSnap] = await Promise.all([
+                const queries = [
                     getDocs(query(collection(db, 'documents'), where('target_audience', '==', 'all'))),
                     getDocs(query(collection(db, 'documents'), where('allowed_uids', 'array-contains', userUid))),
-                ]);
+                ];
+                
+                if (userGroups && userGroups.length > 0) {
+                    queries.push(getDocs(query(collection(db, 'documents'), where('allowed_groups', 'array-contains-any', userGroups))));
+                }
 
-                const allDocs = allSnap.docs.map(d => ({ id: d.id, ...d.data() })) as PlatformDocument[];
-                const specificDocs = specificSnap.docs.map(d => ({ id: d.id, ...d.data() })) as PlatformDocument[];
+                const snaps = await Promise.all(queries);
+                const allDocs = snaps.flatMap(snap => snap.docs.map(d => ({ id: d.id, ...d.data() }))) as PlatformDocument[];
 
                 const seen = new Set<string>();
-                const merged = [...allDocs, ...specificDocs].filter(d => {
+                const merged = allDocs.filter(d => {
                     if (seen.has(d.id)) return false;
                     seen.add(d.id);
                     // EXCLUDE tax documents and tax_distributions from this page
@@ -45,7 +50,7 @@ const InvestorDocuments: React.FC<Props> = ({ userUid }) => {
             }
         };
         fetchDocs();
-    }, [userUid]);
+    }, [userUid, userGroups]);
 
     const categories = [
         { key: 'capital_calls', label: 'Capital Calls', types: ['capital_call'] },
