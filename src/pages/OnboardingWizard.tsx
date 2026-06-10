@@ -4,7 +4,7 @@ import { db } from '../lib/firebase';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import { UserProfile, AccreditedStatus, CheckSize } from '../types';
-import { Shield, ChevronRight, CheckCircle2, KeyRound } from 'lucide-react';
+import { Shield, ChevronRight, CheckCircle2, KeyRound, Info } from 'lucide-react';
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
 
@@ -319,7 +319,16 @@ const OnboardingWizard: React.FC = () => {
                             
                             <div className="space-y-5">
                                 <div>
-                                    <label className="text-xs text-slate-500 uppercase tracking-wider font-medium block mb-1.5">Accreditation Status</label>
+                                    <label className="text-xs text-slate-500 uppercase tracking-wider font-medium flex items-center gap-1.5 mb-1.5">
+                                        Accreditation Status
+                                        <div className="group relative flex items-center">
+                                            <Info size={14} className="text-slate-400 hover:text-teal-600 cursor-help" />
+                                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-2.5 bg-slate-800 text-white text-[11px] leading-relaxed rounded-md shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 font-normal normal-case pointer-events-none">
+                                                US standards generally require an annual income of $200K+ ($300K+ with spouse) for the last two years, or a net worth exceeding $1M (excluding primary residence).
+                                                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800"></div>
+                                            </div>
+                                        </div>
+                                    </label>
                                     <select 
                                         className={fieldClass}
                                         value={userProfile.preferences.accreditedStatus}
@@ -332,7 +341,16 @@ const OnboardingWizard: React.FC = () => {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="text-xs text-slate-500 uppercase tracking-wider font-medium block mb-1.5">Typical Check Size</label>
+                                    <label className="text-xs text-slate-500 uppercase tracking-wider font-medium flex items-center gap-1.5 mb-1.5">
+                                        Typical Check Size
+                                        <div className="group relative flex items-center">
+                                            <Info size={14} className="text-slate-400 hover:text-teal-600 cursor-help" />
+                                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 p-2.5 bg-slate-800 text-white text-[11px] leading-relaxed rounded-md shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 font-normal normal-case pointer-events-none">
+                                                The estimated dollar amount you expect to invest in a single, typical deal on our platform.
+                                                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800"></div>
+                                            </div>
+                                        </div>
+                                    </label>
                                     <select 
                                         className={fieldClass}
                                         value={userProfile.preferences.checkSize}
