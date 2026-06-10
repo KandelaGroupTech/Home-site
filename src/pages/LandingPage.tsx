@@ -23,7 +23,7 @@ const companies: CompanyProfile[] = [
     },
     {
         id: '3',
-        name: 'Ronak Studios',
+        name: 'Reelcraft Media',
         description: 'A forward-thinking media house dedicated to producing high-quality, impactful content across various digital platforms.',
         icon: Clapperboard,
         href: '#',
