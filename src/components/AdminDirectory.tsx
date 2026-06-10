@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db, firebaseConfig } from '../lib/firebase';
-import { collection, getDocs, doc, setDoc, serverTimestamp, deleteDoc, addDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, setDoc, serverTimestamp, deleteDoc, addDoc, updateDoc } from 'firebase/firestore';
 import { initializeApp } from 'firebase/app';
 import { getAuth, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
 import { UserProfile } from '../types';
@@ -66,13 +66,14 @@ const AdminDirectory: React.FC = () => {
 
     const exportToCSV = () => {
         if (filtered.length === 0) return;
-        const headers = ['First Name', 'Last Name', 'Email', 'Phone', 'Company', 'Accredited Status', 'Check Size', 'Open to Deals'];
+        const headers = ['First Name', 'Last Name', 'Email', 'Phone', 'Company', 'Groups', 'Accredited Status', 'Check Size', 'Open to Deals'];
         const rows = filtered.map(u => [
             u.firstName || '',
             u.lastName || '',
             u.email || '',
             u.phone || '',
             u.company || '',
+            (u.groups || []).join(', '),
             u.preferences?.accreditedStatus || 'Unknown',
             u.preferences?.checkSize || '',
             u.preferences?.openToNewDeals ? 'Yes' : 'No'
@@ -86,6 +87,26 @@ const AdminDirectory: React.FC = () => {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+    };
+
+    const handleAddGroup = async (uid: string, currentGroups: string[], newGroup: string) => {
+        const trimmed = newGroup.trim();
+        if (!trimmed || currentGroups.includes(trimmed)) return;
+        try {
+            await updateDoc(doc(db, 'users', uid), { groups: [...currentGroups, trimmed] });
+            fetchUsers();
+        } catch (e) {
+            console.error('Error adding group', e);
+        }
+    };
+
+    const handleRemoveGroup = async (uid: string, currentGroups: string[], groupToRemove: string) => {
+        try {
+            await updateDoc(doc(db, 'users', uid), { groups: currentGroups.filter(g => g !== groupToRemove) });
+            fetchUsers();
+        } catch (e) {
+            console.error('Error removing group', e);
+        }
     };
 
     const handleAddUser = async (e: React.FormEvent) => {
@@ -259,6 +280,7 @@ const AdminDirectory: React.FC = () => {
                                 <th className="px-5 py-4">Email</th>
                                 <th className="px-5 py-4">Phone</th>
                                 <th className="px-5 py-4">Company</th>
+                                <th className="px-5 py-4 min-w-[200px]">Groups</th>
                                 <th className="px-5 py-4">Accredited</th>
                                 <th className="px-5 py-4">Check Size</th>
                                 <th className="px-5 py-4">Open to Deals</th>
@@ -289,6 +311,28 @@ const AdminDirectory: React.FC = () => {
                                     </td>
                                     <td className="px-5 py-4 text-sm text-slate-600">{user.phone || <span className="text-slate-300">-</span>}</td>
                                     <td className="px-5 py-4 text-sm text-slate-600">{user.company || <span className="text-slate-300">-</span>}</td>
+                                    <td className="px-5 py-4 align-top">
+                                        <div className="flex flex-wrap gap-1 mb-2">
+                                            {user.groups?.map(group => (
+                                                <span key={group} className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-teal-50 text-teal-700 border border-teal-200">
+                                                    {group}
+                                                    <button onClick={() => handleRemoveGroup(user.uid, user.groups || [], group)} className="hover:text-teal-900 focus:outline-none">X</button>
+                                                </span>
+                                            ))}
+                                        </div>
+                                        <input
+                                            type="text"
+                                            placeholder="Add group..."
+                                            className="text-xs text-slate-900 px-2 py-1.5 border border-slate-200 rounded-md w-full focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400"
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') {
+                                                    e.preventDefault();
+                                                    handleAddGroup(user.uid, user.groups || [], e.currentTarget.value);
+                                                    e.currentTarget.value = '';
+                                                }
+                                            }}
+                                        />
+                                    </td>
                                     <td className="px-5 py-4">
                                         <span className={`inline-flex items-center text-xs px-2.5 py-1 rounded-full font-medium border ${
                                             user.preferences?.accreditedStatus === 'Accredited' ? 'bg-green-50 text-green-700 border-green-200' :

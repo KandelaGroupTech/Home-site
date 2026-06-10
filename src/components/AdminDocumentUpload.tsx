@@ -14,6 +14,7 @@ const AdminDocumentUpload: React.FC = () => {
     const [type, setType] = useState('general');
     const [audience, setAudience] = useState('all');
     const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+    const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
     const [usersList, setUsersList] = useState<UserProfile[]>([]);
     const [progress, setProgress] = useState(0);
     const [uploading, setUploading] = useState(false);
@@ -38,8 +39,14 @@ const AdminDocumentUpload: React.FC = () => {
         fetchUsers();
     }, []);
 
+    const uniqueGroups = Array.from(new Set(usersList.flatMap(u => u.groups || []))).sort();
+
     const handleUserToggle = (uid: string) => {
         setSelectedUsers(prev => prev.includes(uid) ? prev.filter(id => id !== uid) : [...prev, uid]);
+    };
+
+    const handleGroupToggle = (group: string) => {
+        setSelectedGroups(prev => prev.includes(group) ? prev.filter(g => g !== group) : [...prev, group]);
     };
 
     const handleDrag = (e: React.DragEvent) => {
@@ -92,14 +99,20 @@ const AdminDocumentUpload: React.FC = () => {
                                 type, 
                                 file_url: url,
                                 target_audience: audience,
-                                allowed_uids: audience === 'all' ? [] : selectedUsers,
+                                allowed_uids: audience === 'all' 
+                                    ? [] 
+                                    : audience === 'groups'
+                                        ? usersList.filter(u => u.groups?.some(g => selectedGroups.includes(g))).map(u => u.uid)
+                                        : selectedUsers,
                                 created_at: new Date()
                             });
 
                             // Trigger Emails via Firebase Extension
                             const targetedUsers = audience === 'all' 
                                 ? usersList 
-                                : usersList.filter(u => selectedUsers.includes(u.uid));
+                                : audience === 'groups'
+                                    ? usersList.filter(u => u.groups?.some(g => selectedGroups.includes(g)))
+                                    : usersList.filter(u => selectedUsers.includes(u.uid));
                                 
                             if (targetedUsers.length > 0) {
                                 const batch = writeBatch(db);
@@ -130,6 +143,7 @@ const AdminDocumentUpload: React.FC = () => {
             setFiles([]); 
             setTitle(''); 
             setSelectedUsers([]);
+            setSelectedGroups([]);
             setTimeout(() => { setSuccess(false); setProgress(0); }, 3000);
         } catch (error) { 
             console.error(error); 
@@ -235,21 +249,51 @@ const AdminDocumentUpload: React.FC = () => {
                 {/* Audience */}
                 <div>
                     <label className="text-xs text-slate-500 uppercase tracking-wider font-medium block mb-3">Visibility</label>
-                    <div className="flex gap-4">
-                        {['all', 'specific_users'].map(opt => (
+                    <div className="flex flex-col sm:flex-row gap-4">
+                        {['all', 'groups', 'specific_users'].map(opt => (
                             <label key={opt} className={`flex items-center gap-2.5 cursor-pointer px-4 py-3 rounded-lg border flex-1 transition-all ${audience === opt ? 'border-teal-400 bg-teal-50' : 'border-slate-200 hover:border-teal-200'}`}>
                                 <input type="radio" name="audience" value={opt} checked={audience === opt} onChange={() => setAudience(opt)} className="text-teal-600 focus:ring-teal-500" />
                                 <div>
                                     <p className={`text-sm font-medium ${audience === opt ? 'text-teal-800' : 'text-slate-600'}`}>
-                                        {opt === 'all' ? 'All Investors' : 'Specific Investors'}
+                                        {opt === 'all' && 'All Investors'}
+                                        {opt === 'groups' && 'Specific Groups'}
+                                        {opt === 'specific_users' && 'Specific Investors'}
                                     </p>
                                     <p className="text-xs text-slate-400 font-light">
-                                        {opt === 'all' ? 'Visible to everyone' : 'Choose recipients below'}
+                                        {opt === 'all' && 'Visible to everyone'}
+                                        {opt === 'groups' && 'Target custom groups'}
+                                        {opt === 'specific_users' && 'Choose individuals'}
                                     </p>
                                 </div>
                             </label>
                         ))}
                     </div>
+
+                    {audience === 'groups' && (
+                        <div className="mt-3 border border-slate-200 rounded-xl overflow-hidden bg-slate-50 p-5">
+                            <label className="text-xs text-slate-500 uppercase tracking-wider font-medium block mb-3">Select Groups</label>
+                            {uniqueGroups.length === 0 ? (
+                                <p className="text-sm text-slate-500 italic">No groups exist yet.</p>
+                            ) : (
+                                <div className="flex flex-wrap gap-2 mb-4">
+                                    {uniqueGroups.map(group => (
+                                        <label key={group} className={`flex items-center gap-2 px-3 py-1.5 rounded-full border cursor-pointer transition-colors text-sm font-medium ${selectedGroups.includes(group) ? 'bg-teal-50 border-teal-300 text-teal-800' : 'bg-white border-slate-200 text-slate-600 hover:border-teal-200'}`}>
+                                            <input 
+                                                type="checkbox" 
+                                                checked={selectedGroups.includes(group)}
+                                                onChange={() => handleGroupToggle(group)}
+                                                className="hidden"
+                                            />
+                                            {group}
+                                        </label>
+                                    ))}
+                                </div>
+                            )}
+                            <p className="text-sm font-medium text-teal-700">
+                                This document will be visible to {usersList.filter(u => u.groups?.some(g => selectedGroups.includes(g))).length} investor(s).
+                            </p>
+                        </div>
+                    )}
 
                     {audience === 'specific_users' && (
                         <div className="mt-3 border border-slate-200 rounded-xl overflow-hidden">

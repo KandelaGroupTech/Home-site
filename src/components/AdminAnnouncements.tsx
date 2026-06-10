@@ -31,6 +31,7 @@ const AdminAnnouncements: React.FC<Props> = ({ authorName }) => {
     
     // Individual Selection
     const [selectedUids, setSelectedUids] = useState<string[]>([]);
+    const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
 
     useEffect(() => {
         // Fetch announcements
@@ -65,6 +66,7 @@ const AdminAnnouncements: React.FC<Props> = ({ authorName }) => {
 
     const uniqueCompanies = Array.from(new Set(users.map(u => u.company).filter(Boolean))).sort() as string[];
     const uniqueCheckSizes = Array.from(new Set(users.map(u => u.preferences?.checkSize).filter(Boolean))).sort() as string[];
+    const uniqueGroups = Array.from(new Set(users.flatMap(u => u.groups || []))).sort() as string[];
 
     // Calculate how many users match the current category filters
     const matchedCategoryUsers = users.filter(u => {
@@ -74,6 +76,10 @@ const AdminAnnouncements: React.FC<Props> = ({ authorName }) => {
         const matchDeals = filterOpenToDeals === 'All' || (filterOpenToDeals === 'Yes' ? u.preferences?.openToNewDeals === true : u.preferences?.openToNewDeals === false);
         return matchCompany && matchAccredited && matchCheckSize && matchDeals;
     });
+
+    const matchedGroupUsers = users.filter(u => 
+        u.groups?.some(g => selectedGroups.includes(g))
+    );
 
     const handleDelete = async (id: string) => {
         if (!window.confirm("Are you sure you want to delete this announcement?")) return;
@@ -89,6 +95,14 @@ const AdminAnnouncements: React.FC<Props> = ({ authorName }) => {
             setSelectedUids(selectedUids.filter(id => id !== uid));
         } else {
             setSelectedUids([...selectedUids, uid]);
+        }
+    };
+
+    const toggleGroupSelection = (group: string) => {
+        if (selectedGroups.includes(group)) {
+            setSelectedGroups(selectedGroups.filter(g => g !== group));
+        } else {
+            setSelectedGroups([...selectedGroups, group]);
         }
     };
 
@@ -115,6 +129,17 @@ const AdminAnnouncements: React.FC<Props> = ({ authorName }) => {
             }
             target_audience = 'custom';
             allowed_uids = matchedCategoryUsers.map(u => u.uid);
+        } else if (targetType === 'groups') {
+            if (selectedGroups.length === 0) {
+                alert("Please select at least one group.");
+                return;
+            }
+            if (matchedGroupUsers.length === 0) {
+                alert("Your selected groups do not match any investors.");
+                return;
+            }
+            target_audience = 'custom';
+            allowed_uids = matchedGroupUsers.map(u => u.uid);
         } else if (targetType === 'individuals') {
             if (selectedUids.length === 0) {
                 alert("Please select at least one investor.");
@@ -128,7 +153,9 @@ const AdminAnnouncements: React.FC<Props> = ({ authorName }) => {
             ? users 
             : targetType === 'category' 
                 ? matchedCategoryUsers 
-                : users.filter(u => selectedUids.includes(u.uid));
+                : targetType === 'groups'
+                    ? matchedGroupUsers
+                    : users.filter(u => selectedUids.includes(u.uid));
 
         setSending(true);
         try {
@@ -172,6 +199,7 @@ const AdminAnnouncements: React.FC<Props> = ({ authorName }) => {
             setTitle(''); 
             setContent('');
             setSelectedUids([]);
+            setSelectedGroups([]);
             setSelectedFiles([]);
             if (fileInputRef.current) fileInputRef.current.value = '';
             setTimeout(() => setSent(false), 3000);
@@ -192,8 +220,8 @@ const AdminAnnouncements: React.FC<Props> = ({ authorName }) => {
                 <div className="p-6 space-y-6">
                     <div>
                         <label className="text-xs text-slate-500 uppercase tracking-wider font-medium block mb-2">Target Audience</label>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                            {['all', 'category', 'individuals'].map(type => (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                            {['all', 'category', 'groups', 'individuals'].map(type => (
                                 <button
                                     key={type} type="button"
                                     onClick={() => setTargetType(type)}
@@ -202,6 +230,7 @@ const AdminAnnouncements: React.FC<Props> = ({ authorName }) => {
                                     <div className="flex items-center justify-between">
                                         {type === 'all' && 'All Investors'}
                                         {type === 'category' && 'Filter by Category'}
+                                        {type === 'groups' && 'Target by Group'}
                                         {type === 'individuals' && 'Select Individuals'}
                                         <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${targetType === type ? 'border-teal-600' : 'border-slate-300'}`}>
                                             {targetType === type && <div className="w-2 h-2 rounded-full bg-teal-600" />}
@@ -248,6 +277,35 @@ const AdminAnnouncements: React.FC<Props> = ({ authorName }) => {
                             <div className="col-span-full pt-2">
                                 <p className="text-sm font-medium text-teal-700 flex items-center gap-2">
                                     <Users size={16} /> This message will be sent to {matchedCategoryUsers.length} investor{matchedCategoryUsers.length !== 1 ? 's' : ''}.
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Group Targeting */}
+                    {targetType === 'groups' && (
+                        <div className="bg-slate-50 border border-slate-200 p-5 rounded-xl">
+                            <label className="text-xs text-slate-500 uppercase tracking-wider font-medium block mb-3">Select Groups</label>
+                            {uniqueGroups.length === 0 ? (
+                                <p className="text-sm text-slate-500 italic">No groups exist yet.</p>
+                            ) : (
+                                <div className="flex flex-wrap gap-2 mb-4">
+                                    {uniqueGroups.map(group => (
+                                        <label key={group} className={`flex items-center gap-2 px-3 py-1.5 rounded-full border cursor-pointer transition-colors text-sm font-medium ${selectedGroups.includes(group) ? 'bg-teal-50 border-teal-300 text-teal-800' : 'bg-white border-slate-200 text-slate-600 hover:border-teal-200'}`}>
+                                            <input 
+                                                type="checkbox" 
+                                                checked={selectedGroups.includes(group)}
+                                                onChange={() => toggleGroupSelection(group)}
+                                                className="hidden"
+                                            />
+                                            {group}
+                                        </label>
+                                    ))}
+                                </div>
+                            )}
+                            <div className="pt-2">
+                                <p className="text-sm font-medium text-teal-700 flex items-center gap-2">
+                                    This message will be sent to {matchedGroupUsers.length} investor{matchedGroupUsers.length !== 1 ? 's' : ''}.
                                 </p>
                             </div>
                         </div>
