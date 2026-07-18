@@ -19,7 +19,7 @@ const companies: CompanyProfile[] = [
         name: 'Dunmore Bay Advisory',
         description: 'A specialized mergers and acquisitions transaction advisory shop facilitating complex financial dealings in the lower middle market.',
         icon: Briefcase,
-        href: '#',
+        href: 'https://advisory.thekandelagroup.com',
     },
     {
         id: '3',
