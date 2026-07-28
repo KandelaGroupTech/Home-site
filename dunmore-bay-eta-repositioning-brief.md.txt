@@ -1,0 +1,409 @@
+﻿Dunmore Bay Advisors — Website Repositioning Brief
+From Generalist M&A Advisory → Dedicated Deal Execution Partner for ETA Searchers
+Prepared for: AI website executor (Antigravity) Site: https://advisory.thekandelagroup.com/ Date: July 2026
+
+
+________________
+
+
+PART 1: STRATEGIC CONTEXT (Read this before touching any copy)
+1.1 What the site is today
+The current site positions Dunmore Bay Advisors as a full-spectrum, sector-agnostic M&A execution advisor serving founders selling companies, PE sponsors doing add-ons, and corporate development teams doing carve-outs. It covers buy-side and sell-side, cross-border deals, JVs, distressed M&A, and post-merger integration. It speaks the language of institutional M&A (SPAs, carve-outs, bulge-bracket comparison, $2B+ transaction value).
+1.2 What the site must become
+A site that speaks to exactly ONE person: the ETA searcher — a self-funded or lightly-backed individual determined to buy and run one small business, typically financed with an SBA 7(a) loan, who needs hands-on execution support to actually get a deal closed.
+1.3 The target archetype (write every sentence for this person)
+* Individual searcher (self-funded, traditional search fund, or searching-while-employed)
+* Often a former banker, consultant, PE professional, military officer, or corporate operator
+* Buying a business typically in the $500K–$5M SDE / EBITDA range
+
+
+CONFIRMED DECISION — state the deal-size range explicitly on the site. The site must name the target range "$500K–$5M SDE" (Seller's Discretionary Earnings) in visible, load-bearing copy — not buried in a list. This is a deliberate qualification filter: it improves lead quality at the cost of some top-of-funnel breadth, and the client has approved that trade-off. Use "$500K–$5M SDE" as the canonical formatting (see Section B, C, F, and H for required placements).
+
+
+* Financing with SBA 7(a) debt, often with a seller note and sometimes small equity investors
+* Has read the HBR Guide, listened to the podcasts, maybe joined an accelerator — but is discovering that content is not the same as execution support
+* Pain points (these drive ALL the copy):
+   1. Doesn't know where to start or how to sequence the journey
+   2. Spinning wheels reviewing deals that go nowhere
+   3. Gets to LOI and then stalls — overwhelmed by driving a process to close
+   4. Terrified of missing the big diligence questions and buying a lemon
+   5. Burned out on accelerators/communities that give shallow advice but no real in-the-trenches support
+   6. Searching part-time while employed and needs someone to keep the process moving
+   7. Intimidated by SBA lender requirements, sources & uses, and deal structuring
+   8. Negotiating alone against an experienced seller and their broker
+1.4 The core promise (the through-line of the whole site)
+"You don't need another course. You need someone in the deal with you." Dunmore Bay is the searcher's deal-side operator: a former investment banking and private equity professional who has personally executed dozens of transactions and now sits shoulder-to-shoulder with searchers from first CIM to closing table, purpose-built for SBA-funded acquisitions.
+1.5 Voice and tone rules
+* Direct, empathetic, operator-to-operator. Second person ("you") throughout.
+* Name the searcher's fears explicitly. Specificity = credibility (say "LOI", "Q of E", "SBA 7(a)", "sources & uses", "seller note", "DSCR" — this audience knows the vocabulary and it signals we live in their world).
+* Kill all institutional M&A language: delete "carve-outs," "bulge-bracket," "corporate development," "cross-border," "joint ventures," "distressed M&A," "PE sponsor," "SPA" (use "purchase agreement" instead), "platform add-on."
+* Confident but honest. No fake urgency, no guru energy. This audience is allergic to hype after being oversold by accelerators.
+* Keep sentences short. This is a "finally, someone gets it" site, not a whitepaper.
+1.6 What to REMOVE entirely from the site
+* All sell-side positioning (divestitures, "founder selling your life's work")
+* Carve-outs, spin-offs, joint ventures, cross-border, distressed M&A
+* PE sponsor and corporate development audience references
+* Post-Merger Integration as a headline service (fold a light version into "after closing" support)
+* The "Sectors" list (Technology & SaaS, Financial Services etc.) — replace per Part 2, Section H
+* "$2B+ Transaction Value Advised" stat in its current framing (see revised stats — big institutional numbers can actually alienate this audience if not reframed as "I bring big-deal rigor to your small deal")
+
+
+________________
+
+
+PART 2: SECTION-BY-SECTION REBUILD SPEC
+Implement sections in this order. Where I provide copy in quotes or blocks, use it verbatim unless it conflicts with layout constraints; where I provide options, pick based on visual fit.
+
+
+________________
+
+
+SECTION A — NEW: Rotating "Is This You?" Hero Questions (top of page, above or integrated with hero)
+Concept: Before any branding or value prop, the visitor is hit with a sequence of rotating/scrolling questions that make them feel seen. Auto-rotate every 4–5 seconds with a smooth fade or vertical ticker animation. Pause on hover. Also render all questions as a static list for SEO/no-JS fallback (visually hidden or shown below the fold).
+
+
+Eyebrow text above the rotator: Sound familiar?
+
+
+The question set (rotate through all of these):
+
+
+1. "Determined to buy and run a small business, but not sure where to actually start?"
+2. "Spinning your wheels reviewing deal after deal that never goes anywhere?"
+3. "Keep getting to LOI, then feel overwhelmed trying to drive the process to a close?"
+4. "Lying awake wondering which big diligence questions you're going to miss?"
+5. "Tired of accelerators and courses that give shallow advice but no real support?"
+6. "Searching while employed, and need someone to keep your deal on track while you're at work?"
+7. "Staring at an SBA lender checklist and not sure what they actually want to see?"
+8. "Negotiating alone against a seller and broker who've done this before?"
+9. "Found 'the one' and terrified of fumbling it between LOI and closing?"
+
+
+Answer line (static, appears below the rotator, always visible):
+
+
+You don't need another course. You need someone in the deal with you.
+
+
+CTA under answer line: Book a Free Deal Consultation (anchors to #contact)
+
+
+________________
+
+
+SECTION B — Hero (revise existing hero block)
+Eyebrow / kicker (replaces "M&A Transaction Advisory"): Deal Execution Advisory for ETA Searchers
+
+
+Headline (replaces "Expert Guidance at Every Stage of the Deal"): Your Deal Partner From First CIM to Closing Table
+
+
+Alternative headline options (pick one if the primary doesn't fit the layout):
+
+
+* Buy the Business. We'll Help You Close the Deal.
+* Hands-On Execution Support for Your Search — and Your Deal
+
+
+Subheadline (replaces current paragraph):
+
+
+Dunmore Bay Advisors works exclusively with entrepreneurship-through-acquisition searchers buying businesses with $500K–$5M in SDE — providing hands-on support across deal screening, SBA financing, due diligence, negotiation, and closing, so you get to the finish line on the right deal, at the right terms.
+
+
+Buttons: Book a Free Deal Consultation (primary → #contact) | See How We Help (secondary → #services)
+
+
+Stats bar (replace the four current stats):
+
+
+* 50+ Deals Executed
+* IB + PE Trained (caption: "Investment banking and private equity background, applied to your deal")
+* SBA 7(a) Fluent (caption: "We speak lender")
+* 1 Client Type: Searchers (caption: "This is all we do")
+
+
+(If the layout requires numeric-style stats, use: 50+ Deals Executed, 15+ Years in M&A, 100% Searcher-Focused, $0 Wasted on Deals That Won't Close — the last one only if the design can carry a wry tone; otherwise use SBA-Funded Deal Specialists.)
+
+
+________________
+
+
+SECTION C — About (rewrite "A Seasoned Advisor In Your Corner")
+Section label: About
+
+
+Heading: An Operator In Your Corner — Not Another Cheerleader
+
+
+Body copy:
+
+
+Dunmore Bay Advisors was founded on a simple observation: the ETA world is full of content — podcasts, courses, accelerators, communities — and starved of actual execution support. Searchers are told what to do, then left alone to do it. That's where deals die.
+
+
+We work differently. Our principal spent years in investment banking and private equity — building models, running diligence, negotiating purchase agreements, and closing deals — before turning that experience toward the searchers buying America's small businesses. When you engage Dunmore Bay, you're not buying a curriculum or a Slack channel. You're getting a trained deal professional working your transaction alongside you: reviewing the CIM, pressure-testing the numbers, managing the lender, driving the checklist, and sitting (virtually or literally) at the negotiating table.
+
+
+Whether you're a self-funded searcher, running a traditional search, or hunting for a business on nights and weekends while holding down a job — if you're pursuing a business with $500K–$5M in SDE, we plug in wherever you are in the journey and stay until the deal is done.
+
+
+Replace the four capability chips ("Buy-side & Sell-side", "Cross-border Transactions", "Mid-market Specialist", "PE-backed & Corporate") with:
+
+
+* Self-Funded Searchers
+* Traditional Search Funds
+* Searching While Employed
+* SBA 7(a) Deal Structures
+
+
+________________
+
+
+SECTION D — Services (full rewrite of "Full-Spectrum Deal Execution")
+Section label: Services
+
+
+Heading: Everything Between "I Want to Buy a Business" and "I Own One"
+
+
+Intro line:
+
+
+Engage us for the full journey or plug us into the stage where you're stuck. Every engagement is scoped around your deal, your timeline, and your budget.
+
+
+Six service cards (replace all six current cards):
+
+
+Card 1 — Search Strategy & Deal Screening
+
+
+Stop wasting months on deals that were never going to work. We help you define your acquisition criteria, build your sourcing approach, rapidly screen CIMs and broker listings, and pressure-test seller financials before you fall in love — so your energy goes only into deals worth chasing.
+
+
+Card 2 — Valuation, Offers & LOI
+
+
+Know what the business is actually worth and what a lender will finance. We build the model — SDE and EBITDA normalization, debt service coverage, sources & uses — help you set your offer, and draft an LOI with terms that protect you without scaring off the seller.
+
+
+Card 3 — SBA Financing Support
+
+
+The SBA 7(a) process makes or breaks most searcher deals. We prepare your lender package, build the sources & uses, structure the seller note and any equity injection to satisfy SBA rules, help you compare lender term sheets, and manage the bank's checklist so financing never becomes the bottleneck.
+
+
+Card 4 — Due Diligence Management
+
+
+Sleep at night knowing the big questions got asked. We build and run your diligence plan — financial, operational, legal, customer, and people — coordinate your Quality of Earnings provider and attorney, chase down every open item, and translate findings into a clear picture: proceed, renegotiate, or walk.
+
+
+Card 5 — Negotiation & Purchase Agreement Advisory
+
+
+Don't negotiate alone against a seller and broker who've done this before. We're at your side through price adjustments, working capital targets, reps and warranties, indemnities, seller transition terms, and non-competes — bridging what your attorney drafts and what the deal actually needs.
+
+
+Card 6 — Process Management to Close (and Day 1)
+
+
+The distance from LOI to closing is where searchers get overwhelmed. We run the master checklist, coordinate lender, attorney, accountant, landlord, and insurer, hold everyone to the timeline, and drive the deal to the closing table — then help you plan a clean Day 1 and first 90 days as the new owner.
+
+
+________________
+
+
+SECTION E — Process (rewrite "A Rigorous, Repeatable Process")
+Section label: How We Work
+
+
+Heading: Built Around Your Deal, Not a Curriculum
+
+
+Step 01 — Fit & Scoping Call
+
+
+A free, confidential conversation about where you are in your search, what you're stuck on, and what support would actually move the needle. If we're not the right fit, we'll tell you — and point you somewhere useful.
+
+
+Step 02 — Engagement Design
+
+
+We scope the engagement to your stage: full journey support, deal-by-deal execution, or targeted help (say, just diligence and closing). Clear deliverables, clear fees, no surprises.
+
+
+Step 03 — In the Deal With You
+
+
+This is the part nobody else offers. We work your live deal: screening, modeling, lender management, diligence, negotiation. Regular working sessions, fast turnarounds, and someone who answers when the deal gets weird — because it always does.
+
+
+Step 04 — Close & Handoff
+
+
+We drive the final stretch — closing conditions, funding mechanics, final documents — through signing and wiring. Then we make sure you walk into Day 1 as an owner with a plan, not a panic.
+
+
+________________
+
+
+SECTION F — Why Us (revise "Senior Attention, Every Day of the Deal")
+Section label: Why Dunmore Bay
+
+
+Heading: Real Support. Not Another Community.
+
+
+Four cards (revise):
+
+
+Card 1 — You Work Directly With the Principal
+
+
+No junior analysts, no "office hours," no getting lost in a cohort of 40. Every call, every model, every negotiation session — it's the principal, personally, on your deal.
+
+
+Card 2 — Trained Where Deals Are Hard
+
+
+Investment banking and private equity execution experience — dozens of closed transactions — applied to your acquisition. You get big-deal rigor sized for a small-business purchase.
+
+
+Card 3 — Aligned With Getting You to Close
+
+
+Flexible structures — retainer, milestone-based, or success-weighted — designed so we win when you close the right deal, and so you're never paying for fluff.
+
+
+Card 4 — Discreet by Default
+
+
+Searching while employed? Sensitive seller conversations? Every engagement runs under strict confidentiality. Your employer, your network, and the market hear nothing from us.
+
+
+Replace "Transaction Types" list with a list titled Where We Plug In:
+
+
+* Defining your search criteria
+* Screening CIMs & broker deals
+* Making offers & drafting LOIs
+* SBA 7(a) financing & lender packages
+* Running due diligence
+* Negotiating the purchase agreement
+* Driving LOI → closing
+* Day 1 & first 90 days
+
+
+Replace "Sectors" list with a list titled Who We Work With:
+
+
+* Self-funded searchers
+* Traditional search fund entrepreneurs
+* Searching-while-employed professionals
+* First-time buyers of SBA-eligible businesses
+* Buyers of businesses with $500K–$5M in SDE
+* Searchers stuck mid-deal who need a closer
+
+
+________________
+
+
+SECTION G — NEW: Objection-Handling / "The Accelerator Gap" strip (insert between Why Us and Contact)
+A short, punchy section that names the elephant in the room. Two-column or centered text block.
+
+
+Heading: Courses Teach. Communities Cheer. We Execute.
+
+
+Body:
+
+
+Accelerators and online communities are great for learning the map. But when you're staring at a real CIM, a real lender checklist, and a real seller across the table, the map isn't enough. That's the gap Dunmore Bay fills: a deal professional who does the work with you — building the model, managing the process, asking the questions you didn't know to ask — until the keys are in your hand.
+
+
+Optional mini-comparison (only if it fits the design cleanly — three short columns):
+
+
+* Accelerators: Frameworks, templates, cohort calls
+* Communities: Encouragement, anecdotes, vibes
+* Dunmore Bay: A trained operator working your live deal to close
+
+
+________________
+
+
+SECTION H — Contact (revise "Let's Discuss Your Transaction")
+Heading: Let's Talk About Your Search
+
+
+Intro:
+
+
+Whether you're six months from your first offer or six days from a diligence deadline, reach out for a free, confidential conversation. Come with a live deal, a stalled deal, or just a plan — we'll tell you honestly where we can help. Our sweet spot: SBA-eligible businesses with $500K–$5M in SDE.
+
+
+Form changes:
+
+
+* Rename Transaction Type dropdown to Where are you in your journey? with options:
+   * Just getting started / defining my search
+   * Actively searching & reviewing deals
+   * Have a deal under LOI
+   * In due diligence
+   * Approaching closing / need a closer
+   * Stuck and not sure / other
+* Rename Company field to Company (optional — many searchers don't have one yet) or simply make its placeholder say "Optional"
+* Rename Tell Us About Your Situation to Tell us about your search or your deal with placeholder text: "e.g., I'm a self-funded searcher with an HVAC business under LOI at 3.2x SDE, SBA financing, and I'm drowning in the lender checklist..."
+* Keep the confidentiality line; strengthen it to: All enquiries are strictly confidential — including from employers. NDAs available on request.
+
+
+________________
+
+
+SECTION I — Footer
+* Tagline replace with: Deal execution advisory for entrepreneurship-through-acquisition searchers. From first CIM to closing table.
+* Footer "Services" links rename to: Deal Screening, SBA Financing, Due Diligence, Negotiation, LOI to Close
+* Keep the consultancy disclaimer, and add: Dunmore Bay Advisors is not a law firm, accounting firm, or licensed lender, and does not provide legal, tax, or securities advice.
+
+
+________________
+
+
+SECTION J — Metadata, SEO & Navigation
+* Title tag: Dunmore Bay Advisors | Deal Execution Support for ETA Searchers & SBA Acquisitions
+* Meta description: Hands-on M&A execution advisory exclusively for entrepreneurship-through-acquisition searchers: deal screening, SBA 7(a) financing support, due diligence, negotiation, and closing. From first CIM to closing table.
+* Nav labels: keep structure, but consider renaming Process → How We Work and Why Us → Why Dunmore Bay. Add anchor for the new questions section if it's its own block.
+* Target keywords to weave naturally into headings/body (do not keyword-stuff): "ETA advisor", "search fund advisor", "buy a small business", "SBA 7(a) acquisition", "due diligence support for business acquisition", "LOI to closing", "self-funded search", "acquisition entrepreneurship".
+* Update any schema/OG tags to match the new title and description.
+
+
+________________
+
+
+PART 3: DESIGN & UX DIRECTION
+1. Hero question rotator: vertical ticker or crossfade, 4–5s interval, subtle motion (respect prefers-reduced-motion by showing a static question). The static answer line beneath it should feel like a landing point — slightly larger weight, holds still while questions rotate above it.
+2. Overall aesthetic: keep the existing premium, senior-advisor look (it builds trust) but warm it up slightly — this audience wants competence AND empathy. Avoid stock-photo handshake energy.
+3. Journey visual (optional but recommended): a simple horizontal timeline graphic — Search → Screen → LOI → Financing → Diligence → Negotiate → Close → Day 1 — with a marker saying "We're with you for all of it (or wherever you're stuck)." This single graphic communicates the whole positioning.
+4. CTA consistency: one primary CTA everywhere: Book a Free Deal Consultation. Repeat after Services and after the Accelerator Gap section.
+5. Copy density: the current site is text-heavy; keep the new copy as written but let it breathe — short paragraphs, generous spacing.
+6. Mobile: the question rotator must work as tap-through or auto-rotate cards on mobile; test that the answer line + CTA are visible without scrolling on a standard phone viewport.
+
+
+________________
+
+
+PART 4: QA CHECKLIST FOR THE EXECUTOR
+Before considering this done, verify:
+
+
+* Zero remaining instances of: sell-side, divestiture, carve-out, spin-off, joint venture, cross-border, distressed, corporate development, PE sponsor, bulge-bracket, platform add-on, SPA, post-merger integration (as a standalone service)
+* Every section answers "yes" to: "Would an ETA searcher reading this feel it was written specifically for them?"
+* The rotating questions render, animate, pause on hover, and degrade gracefully without JS
+* Form dropdown reflects searcher journey stages, not transaction types
+* Title tag, meta description, and OG tags updated
+* All internal anchors still resolve after renames
+* Mobile hero shows a question + answer line + CTA above the fold
+* Legal disclaimer added to footer
+* The "$500K–$5M SDE" range appears in at least four places: hero subheadline, About body, "Who We Work With" list, and Contact intro — with consistent formatting ("$500K–$5M SDE") everywhere

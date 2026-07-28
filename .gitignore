@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Secrets & local env files
+.env
+functions/.env
+refresh.json
+functions/refresh.json

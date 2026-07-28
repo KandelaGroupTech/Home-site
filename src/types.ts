@@ -35,6 +35,7 @@ export interface UserProfile {
     ndaSigned?: boolean;
     ndaSignedAt?: any; // Firestore Timestamp
     updatedAt: any; // Firestore Timestamp
+    groups?: string[];
 }
 
 export interface PlatformDocument {
